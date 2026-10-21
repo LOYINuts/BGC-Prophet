@@ -13,8 +13,8 @@ status="$PWD/runs/experiment.status"
 phase() { printf '%s %s\n' "$(date -Is)" "$*" | tee "$status"; }
 trap 'phase "FAILED at line $LINENO"' ERR
 
-phase 'Waiting for existing environment installation'
-while pgrep -u "$(id -u)" -f '^uv pip sync --python .venv/bin/python requirements-training.txt' > /dev/null; do
+phase 'Waiting for verified dependency wheel downloads'
+while pgrep -u "$(id -u)" -f '^aria2c .*wheel-(mirrors|downloads)' > /dev/null; do
     sleep 30
 done
 uv pip sync --python "$python_path" --find-links /tmp/bgc-prophet-gonghang/wheels requirements-training.txt

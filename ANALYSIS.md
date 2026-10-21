@@ -181,7 +181,10 @@ from GenBank are listed in provenance; no genes or labels are fabricated.
 Windows stay within contigs; final partial window uses last 128 genes.
 Metrics count gene positions in windows, including overlapping tails.
 
-NG has 67,148 CDS proteins, all with translations. Encode these proteins afresh
+NG has 67,148 CDS proteins, all with translations, producing 530 windows.
+Of 4,203 unique annotation tags, 3,772 match CDS in supplied GenBank; 431 absent
+tags are listed in provenance and are not included in gene-level evaluation.
+Encode these proteins afresh
 using official `esm2_t6_8M_UR50D`, layer 6 mean representations, truncation 1022,
 on GPU 1. Do not reuse any existing NG embedding files from other projects.
 
@@ -199,6 +202,10 @@ Pass `--test-dataset data/ng/prepared/dataset.csv` and
 `--test-lmdb data/ng/esm2_lmdb` when training. This test set is our NG dataset,
 not the original tracked test CSV. Original CSV identifiers differ from the
 supplied GenBank at 592 positions across 9 windows; original CSV stays intact.
+
+The server runner uses local verified wheels in
+`/tmp/bgc-prophet-gonghang/wheels` to install pinned dependencies. Large wheels
+are fetched from PyPI mirrors with published SHA256 checksums; no version changes.
 
 Run `bash scripts/run_server.sh` in the synchronized server checkout to wait for
 installation, run tests, encode NG, verify and extract official archive, check
