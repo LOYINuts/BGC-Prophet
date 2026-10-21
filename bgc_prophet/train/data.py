@@ -1,3 +1,4 @@
+import ast
 import torch
 from torch.utils.data import Dataset
 import lmdb
@@ -21,7 +22,7 @@ class DataReader:
         # 读取csv并展开为list便于处理
         self.df['labels'] = self.df['labels'].apply(lambda x:x.split())
         self.df['TDsentence'] = self.df['TDsentence'].apply(lambda x:x.split())
-        self.df['TDlabels'] = self.df['TDlabels'].apply(lambda x:x.split()).apply(lambda x:[int(eval(i)) for i in x])
+        self.df['TDlabels'] = self.df['TDlabels'].apply(lambda x:x.split()).apply(lambda x:[int(ast.literal_eval(i)) for i in x])
         self.df['labels_rep'] = self.df['labels'].apply(lambda x:x[0]) # 仅取第一个便于分层抽样
 
         self.labels_list = ['Alkaloid', 'Terpene', 'NRP', 'Polyketide', 'RiPP', 'Saccharide', 'Other']
@@ -62,11 +63,12 @@ class DataReader:
 
     
 class BGCLabelsDataset(Dataset):
-    def __init__(self, data, lmdbPath, mode='train') -> None:
+    def __init__(self, data, lmdbPath, mode='train', env=None) -> None:
         super().__init__()
         self.data = data
         self.mode = mode
-        self.env = lmdb.open(lmdbPath, readonly=True)
+        self.owns_env = env is None
+        self.env = env if env is not None else lmdb.open(lmdbPath, readonly=True)
         self.txn = self.env.begin()
 
     def __len__(self):
@@ -104,7 +106,8 @@ class BGCLabelsDataset(Dataset):
     
     
     def __del__(self):
-        self.env.close()
+        if getattr(self, 'owns_env', False) and hasattr(self, 'env'):
+            self.env.close()
         # super().__del__()
         # print('env closed')
 

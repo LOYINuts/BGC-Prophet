@@ -1,0 +1,12 @@
+-e .
+torch==2.5.1
+numpy==1.26.4
+pandas==2.2.3
+scikit-learn==1.5.2
+matplotlib==3.9.2
+biopython==1.84
+fair-esm==2.0.0
+lmdb==1.5.1
+tensorboard==2.18.0
+tqdm==4.67.1
+setuptools==75.6.0
