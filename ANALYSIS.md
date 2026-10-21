@@ -157,18 +157,31 @@ error to protect results. Partial experiments have no resume feature.
 Deterministic algorithms
 and seeded Python/NumPy/PyTorch are enabled. LMDB uses one loader process.
 
-Source: <https://zenodo.org/records/8104551>. Training CSV is 42,096,283 bytes,
-MD5 `e55a046f77c4baef3b6310bfc77dd923`.
-`lmdb_train_dataset.tar.gz` is 5,591,945,924 bytes,
-MD5 `bd839bb1b7f98ea157b9b12b84b44270`. Download only on server, verify checksum,
-and inspect archive members before extraction. Test embeddings need separate
-coverage verification.
+Training source is now complete official Zenodo record
+<https://zenodo.org/records/17112180>, including its paired
+`BGC_train_dataset_inbalence.csv`, as explicitly selected by the user.
+
+- `lmdb_BGC.zip`: 41,451,023,708 bytes,
+  MD5 `c7effa7b9b6804409803be975d287224`.
+- `BGC_train_dataset_inbalence.csv`: 108,913,694 bytes,
+  MD5 `fb7b8969e3a51f7380984c40539c7dd9`.
+
+Files download only on server to
+`/tmp/bgc-prophet-gonghang/official17112180/`. Runner verifies both checksums,
+extracts ZIP safely, records paired CSV statistics and checks complete gene
+coverage before training. No Parquet conversion or old-library substitution.
+
+The earlier record 8104551 was verified but is incomplete for the repository
+CSV: 1,471,961 background gene identifiers are absent, leaving only 438 of
+16,012 complete windows. No samples were removed or zero-filled; training
+stopped before any epoch. The newly supplied record supersedes this source.
 
 Server repository is `/home/gonghang/codes/BGC-Prophet`. Server proxy is
 `http://127.0.0.1:7892`; apply HTTP_PROXY and HTTPS_PROXY to dependency installation
 and downloads. User chose GPU 1 despite an existing shared GPU workload.
-Official training LMDB must be downloaded directly from Zenodo and verified
-with the published archive MD5. No Parquet conversion is used.
+Use the paired CSV and LMDB from record 17112180 for all five seeds.
+The earlier repository CSV statistics above describe the initial audit, not the
+final selected training data. Model and optimizer settings remain unchanged.
 
 Our independent NG test source is
 `/home/gonghang/codes/my-bgc-v2/data/raw/ng/`: GenBank
@@ -211,7 +224,11 @@ Run `bash scripts/run_server.sh` in the synchronized server checkout to wait for
 installation, run tests, encode NG, verify and extract official archive, check
 GPU forward/backward, and train/evaluate five seeds. Launch with `nohup` and
 redirect output to a persistent log. Progress is in `runs/experiment.status`.
-Expected result directory is `runs/detection_official_ng_esm2/`.
+Expected result directory is `runs/detection_17112180_ng_esm2/`.
+The NG ESM2 encoding has completed: 67,148 layer-6 vectors of dimension 320.
+Encoding model name, PyTorch version and model weight SHA256 are recorded in
+`data/ng/esm2_encoding.json`. Official 17112180 download and full coverage
+validation remain prerequisites for training.
 
 Verdict: original training and metric scripts require corrections before their
 numbers are reliable. New reproduction bypasses those failures while preserving
