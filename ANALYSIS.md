@@ -114,9 +114,8 @@ identifiers do not establish absence of sequence homology.
 ## New experiment outputs
 
 `uv run --no-project --python .venv/bin/python python -m bgc_prophet.train.reproduce`
-trains detection for seeds 1301–1305. See `AGENTS.md` for exact commands, data
-checksums and configuration. Each seed has configuration and split indices,
-per-epoch JSON logs, best/last weights, test metrics and test prediction arrays.
+trains detection for seeds 1301–1305. Each seed has configuration and split
+indices, per-epoch JSON logs, best/last weights, test metrics and predictions.
 Model selection uses minimum validation BCE; test is evaluated once afterward.
 Threshold is fixed at 0.5. Aggregate includes mean and sample standard deviation.
 This is gene-level evaluation; it does not reproduce cluster-level threshold
@@ -126,6 +125,50 @@ Local synthetic tests check raw-count metrics on imbalanced labels, two complete
 seed runs, independent output files, reproducible repeated predictions,
 checkpoint loading and refusal to overwrite previous runs. Real embedding and
 GPU validation must run on server before training starts.
+
+## Reproduction settings and commands
+
+Use Python 3.12 and `requirements-training.txt`. Pins include PyTorch 2.5.1;
+Linux wheels use CUDA 12.4, compatible with server driver 560.28.03.
+
+Settings retained from original scripts and checkpoint names: 320 dimensions,
+128 genes, 5 heads, 2 layers, feedforward 1280, both dropouts 0.1, BCE, AdamW,
+weight decay 0.01, batch 32, learning rate 0.0005, 200 epochs. Exponential LR
+uses gamma 0.95 after epochs >= 5 while LR > 5e-6. Split is original per-seed
+stratified 80/20 rows. New selection rule is minimum validation BCE; original
+trainer saved every epoch without a selection rule. Threshold 0.5 is fixed.
+
+```bash
+uv venv --python 3.12
+uv pip sync --python .venv/bin/python requirements-training.txt
+uv run --no-project --python .venv/bin/python \
+  python -m unittest discover -s tests -v
+CUDA_VISIBLE_DEVICES=1 uv run --no-project --python .venv/bin/python \
+  python -u -m bgc_prophet.train.reproduce \
+  --lmdb /path/to/training_lmdb --test-lmdb /path/to/test_lmdb \
+  --output runs/detection
+```
+
+Run same training command with `--check-only` before training. On Windows use
+`.venv/Scripts/python.exe`. Existing seed directories cause an error to protect
+results. Partial experiments have no resume feature. Deterministic algorithms
+and seeded Python/NumPy/PyTorch are enabled. LMDB uses one loader process.
+
+Source: <https://zenodo.org/records/8104551>. Training CSV is 42,096,283 bytes,
+MD5 `e55a046f77c4baef3b6310bfc77dd923`.
+`lmdb_train_dataset.tar.gz` is 5,591,945,924 bytes,
+MD5 `bd839bb1b7f98ea157b9b12b84b44270`. Download only on server, verify checksum,
+and inspect archive members before extraction. Test embeddings need separate
+coverage verification.
+
+Server repository is `/home/gonghang/codes/BGC-Prophet`. Server proxy is
+`http://127.0.0.1:7892`; apply HTTP_PROXY and HTTPS_PROXY to dependency installation
+and downloads. User chose GPU 1 despite an existing shared GPU workload.
+Existing training LMDB is
+`/home/gonghang/codes/my-bgc/data/bgcp_model/lmdb` (62 GB, 23,668,771 records).
+Existing 320-dimensional test embeddings are at
+`/home/gonghang/codes/my-bgc-v2/data/derived/ng_embeddings/ng_gene_embeddings_320d.parquet`.
+Reuse depends on complete key coverage and representation checks.
 
 Verdict: original training and metric scripts require corrections before their
 numbers are reliable. New reproduction bypasses those failures while preserving
