@@ -7,13 +7,13 @@ import argparse
 import sys
 import torch
 
-from command import ExtractCommand as extract
-from command import organizeCommand as organize
-from command import splitCommand as split
-from command import predictCommand as predict
-from command import outputCommand as output
-from command import classifyCommand as classify
-from command import piplineCommand as pipline
+from .command import ExtractCommand as extract
+from .command import organizeCommand as organize
+from .command import splitCommand as split
+from .command import predictCommand as predict
+from .command import outputCommand as output
+from .command import classifyCommand as classify
+from .command import piplineCommand as pipline
 
 
 def main():

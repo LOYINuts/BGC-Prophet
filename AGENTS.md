@@ -5,7 +5,8 @@
 - Server: `ssh -p 4618 gonghang@10.157.197.4`.
 - Repository: `/home/gonghang/codes/BGC-Prophet`.
 - Server HTTP/HTTPS proxy: `http://127.0.0.1:7892`.
-- Download datasets on server only. Reuse existing data after checking coverage.
+- Download datasets on server only. Training must use official BGC-Prophet LMDB.
+- Use our raw NG GenBank and annotations; encode proteins afresh with ESM2-8M.
 - Current task: detection model only, seeds 1301–1305, GPU 1.
 - Preserve original model and training settings; document protocol changes.
 - Never overwrite existing experiments or stop unrelated processes.
