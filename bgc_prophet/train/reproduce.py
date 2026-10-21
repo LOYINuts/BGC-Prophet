@@ -94,7 +94,7 @@ def main():
     parser.add_argument("--dataset", type=Path, default=Path("data/BGC_train_dataset.csv"))
     parser.add_argument("--lmdb", type=Path, required=True)
     parser.add_argument("--test-dataset", type=Path, default=Path("data/Nine_genomes_test_dataset.csv"))
-    parser.add_argument("--test-lmdb", type=Path, required=True)
+    parser.add_argument("--test-lmdb", type=Path, help="Omit to train and report validation only")
     parser.add_argument("--output", type=Path, default=Path("runs/detection"))
     parser.add_argument("--seeds", type=int, nargs="+", default=[1301, 1302, 1303, 1304, 1305])
     parser.add_argument("--epochs", type=int, default=200)
@@ -107,10 +107,10 @@ def main():
     args = parser.parse_args()
     if args.epochs < 1 or args.batch_size < 1 or args.workers != 0 or len(set(args.seeds)) != len(args.seeds):
         parser.error("Positive epochs/batch size, unique seeds and --workers 0 required (LMDB transaction stays in process)")
-    for path in (args.dataset, args.test_dataset):
+    for path in ((args.dataset, args.test_dataset) if args.test_lmdb else (args.dataset,)):
         if not path.is_file():
             parser.error(f"Missing CSV: {path}")
-    for path in (args.lmdb, args.test_lmdb):
+    for path in ((args.lmdb, args.test_lmdb) if args.test_lmdb else (args.lmdb,)):
         if not (path / "data.mdb").is_file():
             parser.error(f"Missing LMDB: {path}/data.mdb")
     if args.device == "cuda" and not torch.cuda.is_available():
@@ -124,11 +124,13 @@ def main():
     data = DataReader(args.dataset, test_ratio=0.2)
     training = BGCLabelsDataset(data, str(args.lmdb), "train")
     validation = BGCLabelsDataset(data, str(args.lmdb), "test", env=training.env)
-    test_data = DataReader(args.test_dataset, test_ratio=0)
-    test_env = training.env if args.lmdb.resolve() == args.test_lmdb.resolve() else None
-    test = BGCLabelsDataset(test_data, str(args.test_lmdb), "eval", env=test_env)
+    test = None
+    if args.test_lmdb:
+        test_data = DataReader(args.test_dataset, test_ratio=0)
+        test_env = training.env if args.lmdb.resolve() == args.test_lmdb.resolve() else None
+        test = BGCLabelsDataset(test_data, str(args.test_lmdb), "eval", env=test_env)
+        print("Test genes:", check_embeddings(test_data, test, args.max_len), flush=True)
     print("Training genes:", check_embeddings(data, training, args.max_len), flush=True)
-    print("Test genes:", check_embeddings(test_data, test, args.max_len), flush=True)
     if args.check_only:
         return
     args.output.mkdir(parents=True, exist_ok=True)
@@ -139,7 +141,8 @@ def main():
     config.update(git_commit=revision, torch_version=torch.__version__, numpy_version=np.__version__,
                   device_name=torch.cuda.get_device_name() if args.device == "cuda" else "cpu",
                   dataset_sha256=hashlib.sha256(args.dataset.read_bytes()).hexdigest(),
-                  test_dataset_sha256=hashlib.sha256(args.test_dataset.read_bytes()).hexdigest(),
+                  test_dataset_sha256=hashlib.sha256(args.test_dataset.read_bytes()).hexdigest() if test else None,
+                  evaluation_split="test" if test else "validation",
                   validation_ratio=0.2, nhead=5, encoder_layers=2, transformer_dropout=0.1,
                   mlp_dropout=0.1, threshold=0.5, selection="minimum validation BCE",
                   split_policy="per-seed stratified rows, matching original DataReader")
@@ -153,7 +156,7 @@ def main():
         write_json(folder / "config.json", {**config, "seed": seed})
         write_json(folder / "split.json", {"train": data.train, "validation": data.test})
         loaders = [DataLoader(dataset, batch_size=args.batch_size, shuffle=index == 0,
-                              num_workers=0) for index, dataset in enumerate((training, validation, test))]
+                              num_workers=0) for index, dataset in enumerate((training, validation, test) if test else (training, validation))]
         model = transformerEncoderNet(d_model=320, nhead=5, num_encoder_layers=2,
                                       max_len=args.max_len, dim_feedforward=1280,
                                       transformer_dropout=0.1, mlp_dropout=0.1).to(args.device)
@@ -178,10 +181,12 @@ def main():
                     scheduler.step()
         torch.save(model.state_dict(), folder / "last.pt")
         model.load_state_dict(torch.load(folder / "best.pt", map_location=args.device, weights_only=True))
-        test_metrics, target, probability = run_epoch(model, loaders[2], args.device)
-        np.savez_compressed(folder / "test_predictions.npz", target=target, probability=probability)
-        result = {"seed": seed, "best_epoch": best_epoch, "validation_bce": best_loss, **test_metrics}
-        write_json(folder / "test_metrics.json", result)
+        evaluation_split = "test" if test else "validation"
+        evaluation_metrics, target, probability = run_epoch(model, loaders[2] if test else loaders[1], args.device)
+        np.savez_compressed(folder / f"{evaluation_split}_predictions.npz", target=target, probability=probability)
+        result = {"seed": seed, "evaluation_split": evaluation_split, "best_epoch": best_epoch,
+                  "validation_bce": best_loss, **evaluation_metrics}
+        write_json(folder / f"{evaluation_split}_metrics.json", result)
         results.append(result)
         write_json(args.output / "results.json", results)
         with (args.output / "results.csv").open("w", newline="", encoding="utf-8") as handle:
@@ -192,7 +197,7 @@ def main():
     for key in ("bce", "accuracy", "precision", "recall", "f1", "auroc", "average_precision"):
         values = [result[key] for result in results if result[key] is not None]
         summary[key] = {"mean": statistics.mean(values), "sample_std": statistics.stdev(values) if len(values) > 1 else None} if values else None
-    write_json(args.output / "summary.json", {"seeds": args.seeds, "metrics": summary})
+    write_json(args.output / "summary.json", {"seeds": args.seeds, "evaluation_split": "test" if test else "validation", "metrics": summary})
 
 
 if __name__ == "__main__":

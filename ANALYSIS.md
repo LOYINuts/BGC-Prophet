@@ -149,8 +149,11 @@ CUDA_VISIBLE_DEVICES=1 uv run --no-project --python .venv/bin/python \
   --output runs/detection
 ```
 
-Run same training command with `--check-only` before training. On Windows use
-`.venv/Scripts/python.exe`. Existing seed directories cause an error to protect
+Run same training command with `--check-only` before training. Omit `--test-lmdb`
+to train and report selected-checkpoint validation metrics only; output explicitly
+labels this `evaluation_split=validation`. This is not independent test evidence.
+On Windows use `.venv/Scripts/python.exe`. Existing seed directories cause an
+error to protect
 results. Partial experiments have no resume feature. Deterministic algorithms
 and seeded Python/NumPy/PyTorch are enabled. LMDB uses one loader process.
 
@@ -169,6 +172,21 @@ Existing training LMDB is
 Existing 320-dimensional test embeddings are at
 `/home/gonghang/codes/my-bgc-v2/data/derived/ng_embeddings/ng_gene_embeddings_320d.parquet`.
 Reuse depends on complete key coverage and representation checks.
+
+The existing training Parquet in `my-bgc/data/bgcp_model/training_v3/` contains
+all 1,777,142 training identifiers. `scripts/prepare_training_lmdb.py` converts
+it to LMDB, requiring exact comparison of source embeddings with original LMDB
+samples. Run in an existing uv environment with pyarrow, lmdb and torch; pyarrow
+is needed only for preparation, not training.
+
+Full `my-bgc-v2/data` inspection found no alternate original Nine-genomes LMDB
+or FASTA. Existing test embeddings have 67,148 genes but lack 592 original CSV
+identifiers, affecting 9 windows (591 negative positions, one positive).
+Missing identifiers are absent from raw GenBank features, not merely embeddings.
+For example CSV uses MCAG_05612 and later tags, while supplied MCAG contig ends
+at MCAG_05611. Test CSV remains unchanged; no rows removed or embeddings filled.
+Training and original holdout evaluation can proceed. Independent original test
+metrics remain pending a matching source dataset.
 
 Verdict: original training and metric scripts require corrections before their
 numbers are reliable. New reproduction bypasses those failures while preserving

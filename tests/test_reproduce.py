@@ -1,5 +1,6 @@
 """Small CPU checks; all CSVs and embeddings here are synthetic."""
 import csv
+import importlib.util
 import json
 from pathlib import Path
 import pickle
@@ -67,11 +68,50 @@ class ReproductionTests(unittest.TestCase):
             for seed in (1301, 1302):
                 with np.load(root / f"runs/seed_{seed}/test_predictions.npz") as first, np.load(root / f"repeat/seed_{seed}/test_predictions.npz") as second:
                     np.testing.assert_array_equal(first["probability"], second["probability"])
+            validation_only = command.copy()
+            validation_only[validation_only.index(str(root / "runs"))] = str(root / "validation")
+            option = validation_only.index("--test-lmdb")
+            del validation_only[option:option + 2]
+            completed = subprocess.run(validation_only, capture_output=True, text=True)
+            self.assertEqual(completed.returncode, 0, completed.stderr)
+            report = json.loads((root / "validation/summary.json").read_text())
+            self.assertEqual(report["evaluation_split"], "validation")
+            self.assertTrue((root / "validation/seed_1301/validation_metrics.json").is_file())
+            self.assertFalse((root / "validation/seed_1301/test_metrics.json").exists())
             refused = subprocess.run(command, capture_output=True, text=True)
             self.assertNotEqual(refused.returncode, 0)
             self.assertIn("Seed output exists", refused.stderr)
             checked = subprocess.run(command + ["--check-only"], capture_output=True, text=True)
             self.assertEqual(checked.returncode, 0, checked.stderr)
+    @unittest.skipUnless(importlib.util.find_spec("pyarrow"), "Optional converter requires pyarrow")
+    def test_prepare_lmdb(self):
+        import pyarrow as pa
+        import pyarrow.parquet as pq
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            reference = lmdb.open(str(root / "reference"), map_size=1_000_000)
+            embedding = torch.arange(320, dtype=torch.float32)
+            with reference.begin(write=True) as transaction:
+                transaction.put(b"gene", pickle.dumps({"mean_representations": {6: embedding}}))
+            reference.close()
+            dataset = root / "data.csv"
+            dataset.write_text("TDsentence\ngene\n")
+            parquet = root / "embeddings.parquet"
+            pq.write_table(pa.table({"gene_id": ["gene"], "embedding": [embedding.tolist()]}), parquet)
+            command = [sys.executable, "scripts/prepare_training_lmdb.py", "--parquet", str(parquet),
+                       "--dataset", str(dataset), "--output", str(root / "converted"),
+                       "--reference-lmdb", str(root / "reference")]
+            completed = subprocess.run(command, capture_output=True, text=True)
+            self.assertEqual(completed.returncode, 0, completed.stderr)
+            converted = lmdb.open(str(root / "converted"), readonly=True)
+            with converted.begin() as transaction:
+                actual = pickle.loads(transaction.get(b"gene"))["mean_representations"][6]
+                torch.testing.assert_close(actual, embedding, rtol=0, atol=0)
+            converted.close()
+            dataset.write_text("TDsentence\nmissing\n")
+            failed = subprocess.run(command, capture_output=True, text=True)
+            self.assertNotEqual(failed.returncode, 0)
+            self.assertIn("Missing genes: 1", failed.stderr)
 
 
 if __name__ == "__main__":
