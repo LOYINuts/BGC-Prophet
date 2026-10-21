@@ -176,6 +176,8 @@ Our independent NG test source is
 Migrate copies into this repository's ignored `data/ng/raw/` directory.
 `scripts/prepare_ng.py` produces protein FASTA, 128-gene windows, binary labels
 and source checksums. Labels follow locus-tag membership in annotation CSV.
+Annotation tags absent
+from GenBank are listed in provenance; no genes or labels are fabricated.
 Windows stay within contigs; final partial window uses last 128 genes.
 Metrics count gene positions in windows, including overlapping tails.
 
@@ -197,6 +199,12 @@ Pass `--test-dataset data/ng/prepared/dataset.csv` and
 `--test-lmdb data/ng/esm2_lmdb` when training. This test set is our NG dataset,
 not the original tracked test CSV. Original CSV identifiers differ from the
 supplied GenBank at 592 positions across 9 windows; original CSV stays intact.
+
+Run `bash scripts/run_server.sh` in the synchronized server checkout to wait for
+installation, run tests, encode NG, verify and extract official archive, check
+GPU forward/backward, and train/evaluate five seeds. Launch with `nohup` and
+redirect output to a persistent log. Progress is in `runs/experiment.status`.
+Expected result directory is `runs/detection_official_ng_esm2/`.
 
 Verdict: original training and metric scripts require corrections before their
 numbers are reliable. New reproduction bypasses those failures while preserving

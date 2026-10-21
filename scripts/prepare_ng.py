@@ -49,8 +49,10 @@ def main():
             rows.append({"ID": f"{record.id}_{index}", "labels": "Unknown",
                          "TDsentence": " ".join(window), "TDlabels": " ".join(map(str, labels))})
     missing_annotations = set(annotations) - genes
+    if not genes or not genes.intersection(annotations):
+        raise ValueError("No annotated genes found in GenBank")
     if missing_annotations:
-        raise ValueError(f"Annotated genes absent from GenBank: {sorted(missing_annotations)[:10]}")
+        print(f"Annotation tags absent from GenBank: {sorted(missing_annotations)}", flush=True)
     args.output.mkdir(parents=True)
     SeqIO.write(proteins, args.output / "proteins.faa", "fasta")
     with (args.output / "dataset.csv").open("w", newline="") as handle:
@@ -60,6 +62,8 @@ def main():
     manifest = {"source_files": {str(path.resolve()): hashlib.sha256(path.read_bytes()).hexdigest()
                                 for path in (args.genbank, args.annotations)},
                 "unique_genes": len(genes), "windows": len(rows), "annotated_genes": len(annotations),
+                "annotated_genes_in_genbank": len(set(annotations) & genes),
+                "annotation_tags_absent_from_genbank": sorted(missing_annotations),
                 "protocol": "GenBank CDS order per contig; stride 128; final window last 128; short contigs repeated",
                 "labels": "locus tag membership in 291BGC.csv; unmatched CDS negative",
                 "encoding_required": "fresh esm2_t6_8M_UR50D layer 6 mean; truncate proteins to 1022 residues",
