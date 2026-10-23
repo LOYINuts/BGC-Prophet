@@ -231,9 +231,9 @@ Server repository is `/home/gonghang/codes/BGC-Prophet`. Server proxy is
 `http://127.0.0.1:7892`; apply HTTP_PROXY and HTTPS_PROXY to dependency installation
 and downloads. User chose GPU 1 despite an existing shared GPU workload.
 Use the paired CSV and LMDB from record 17112180 for all five seeds.
-The earlier repository CSV statistics above describe the initial audit, not the
-Model and optimizer settings for this original run are recorded below; the
-paper-protocol correction above supersedes them for new experiments.
+The earlier repository CSV statistics describe the initial audit, not the final
+selected training data. The paper-protocol correction above supersedes the
+original run's optimization settings for new experiments.
 
 Our independent NG test source is
 `/home/gonghang/codes/my-bgc-v2/data/raw/ng/`: GenBank
