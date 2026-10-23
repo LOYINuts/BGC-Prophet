@@ -328,12 +328,16 @@ files, transfer bundles, failed clone and speed-test files created in this task.
 Training LMDB/CSV, NG raw data and fresh embeddings, virtual environment,
 checkpoints, saved predictions and logs are preserved.
 
-The cleanup SSH call timed out; follow-up SSH checks also timed out before
-printing output. Completion and reclaimed space are not yet verified. Do not
-report a successful cleanup or delete additional files before checking these
-specific targets. The ZIP is reproducible from the recorded official URL and
-MD5; rerunning the original server runner after removing it will download it
-again. Continue the existing run instead of rerunning that script.
+The first cleanup SSH call timed out, but a subsequent explicit path check
+confirmed removal of the ZIP, obsolete data, abandoned conversion output,
+wheels, bundles and failed clone. These targets occupied approximately 64 GiB
+before cleanup; this estimate is from target sizes, not a filesystem-wide delta.
+The active official LMDB remains present, training PID 4149569 remains running,
+and `/tmp` filesystem has 666 GiB available after cleanup.
+
+The ZIP is reproducible from the recorded official URL and MD5. Rerunning the
+original server runner after removing it will download it again. Continue the
+existing run instead of rerunning that script.
 
 Verdict: original training and metric scripts require corrections before their
 numbers are reliable. New reproduction bypasses those failures while preserving
