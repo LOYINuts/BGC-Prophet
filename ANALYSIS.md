@@ -123,8 +123,8 @@ This is gene-level evaluation; it does not reproduce cluster-level threshold
 
 Local synthetic tests check raw-count metrics on imbalanced labels, two complete
 seed runs, independent output files, reproducible repeated predictions,
-checkpoint loading and refusal to overwrite previous runs. Real embedding and
-GPU validation must run on server before training starts.
+checkpoint loading and refusal to overwrite previous runs. Real embedding
+coverage and GPU forward/backward checks passed before the active run.
 
 ## Reproduction settings and commands
 
@@ -227,13 +227,118 @@ redirect output to a persistent log. Progress is in `runs/experiment.status`.
 Expected result directory is `runs/detection_17112180_ng_esm2/`.
 The NG ESM2 encoding has completed: 67,148 layer-6 vectors of dimension 320.
 Encoding model name, PyTorch version and model weight SHA256 are recorded in
-`data/ng/esm2_encoding.json`. Official 17112180 download and full coverage
-validation remain prerequisites for training.
+`data/ng/esm2_encoding.json`. Official archive and paired CSV MD5 checks,
+extraction, and coverage of all 3,684,284 training genes passed before training.
+
+## Experiment results: interim snapshot, 2026-10-23
+
+This snapshot was checked around 07:25 EDT (server time, UTC-4). The experiment
+has not finished all five seeds: seeds 1301 and 1302 completed 200 epochs and NG
+testing; seed 1303 completed 130 epochs during inspection and is still training;
+1304 and 1305 have not started. The original process is preserved. No final
+five-seed mean or standard deviation is available yet.
+
+The training run uses commit `63fa8c1fc920a39cf50edf1e3a25112a41133f8a`,
+PyTorch 2.5.1+cu124, NumPy 1.26.4, Python 3.12 and GPU 1 (RTX A6000).
+The official paired CSV contains 32,510 windows: 20,000 Non, 4,070 NRP,
+3,425 Polyketide, 1,660 RiPP, 1,545 Other, 825 Terpene, 685 Saccharide and
+300 Alkaloid. Every sentence and label sequence has length 128.
+Each seed uses 26,008 training windows and 6,502 validation windows.
+
+The newly encoded NG test has 530 windows and 67,840 evaluated positions:
+3,803 positive and 64,037 negative (5.61% positive). These include repeated
+positions from overlapping contig tails; there are 67,148 unique genes.
+The 3,772 unique annotated CDS become 3,803 positive window positions.
+The 431 annotation tags absent from GenBank remain listed in provenance.
+
+Best epochs below use the saved zero-based epoch index. Threshold is fixed at
+0.5; average precision (AP) is scikit-learn average precision, not trapezoidal
+PR-AUC. All metrics are fractions between 0 and 1.
+
+| Seed | Epochs completed | Best epoch | Validation BCE | NG BCE | NG accuracy | NG precision | NG recall | NG F1 | NG AUROC | NG AP |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 1301 | 200 | 50 | 0.025353 | 0.163388 | 0.948939 | 0.548415 | 0.504865 | 0.525739 | 0.898743 | 0.531919 |
+| 1302 | 200 | 58 | 0.029238 | 0.142636 | 0.956088 | 0.641678 | 0.490665 | 0.556102 | 0.908042 | 0.560613 |
+| 1303 | 130, running | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending |
+| 1304 | Not started | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending |
+| 1305 | Not started | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending |
+
+Confusion matrices use true labels as rows, predicted labels as columns,
+with class order [negative, positive].
+
+| Seed | TN | FP | FN | TP |
+| --- | --- | --- | --- | --- |
+| 1301 | 62,456 | 1,581 | 1,883 | 1,920 |
+| 1302 | 62,995 | 1,042 | 1,937 | 1,866 |
+
+### Interpretation and verification
+
+At the selected checkpoints, validation F1 is 0.922053 / 0.913982 and AUROC is
+0.994744 / 0.991215 for seeds 1301 / 1302. NG performance is substantially lower.
+This is consistent with a gap between training-distribution validation and NG;
+the current evidence does not establish its cause. Original row splitting can
+share related context between training and validation. The 51,976 shared-gene
+count in the initial audit applies to the old repository CSV only; it was not
+remeasured for the final paired CSV and should not be quoted as its count.
+
+Always predicting negative would already give NG accuracy 0.943942. The observed
+0.948939 / 0.956088 accuracy therefore needs to be read alongside F1 and AP.
+Both seeds recover about half of positive gene positions at threshold 0.5.
+Seed 1302 has fewer false positives (1,042 versus 1,581) and higher precision,
+but slightly lower recall. Two seeds do not establish stable seed variability.
+No test-based threshold tuning or checkpoint selection was performed.
+
+For both completed seeds, all saved NG metrics were independently recomputed
+from `test_predictions.npz` and matched `test_metrics.json` within 1e-12.
+The confusion matrices contain exactly 67,840 positions. Each history has 200
+epochs; selected epochs match the minimum validation BCE. Saved train/validation
+row-index sets are disjoint. This verifies row separation, not gene homology
+separation. NG results are gene-position metrics, not BGC cluster or product
+classification metrics; no claim of reproducing published cluster scores.
+
+### Result locations and continuation
+
+Server root: `/home/gonghang/codes/BGC-Prophet`.
+
+- Experiment directory: `runs/detection_17112180_ng_esm2/`.
+- Per seed: `config.json`, `split.json`, `epochs.jsonl`, `best.pt`, `last.pt`,
+  `test_predictions.npz`, `test_metrics.json` (last/test files appear on completion).
+- Completed-seed aggregate: `results.json` and `results.csv`.
+- Final five-seed aggregate: `summary.json`, written only after all seeds finish.
+- Runner log: `/home/gonghang/codes/BGC-Prophet-experiment17112180.log`.
+- Runner phase: `runs/experiment.status`; this shows the overall training phase,
+  not the current seed/epoch. Use histories to inspect actual progress.
+
+Training and test CSV SHA256 values from the run configuration:
+
+```text
+training: 5c814849a10c7bfd7cc95d184f78ad993969d24188b29f2d8d6d2fe2412b5c51
+NG test:  6f5fccbf2b095667f637598b8acf27d9ef76aebdd9f3e8e80b77aaff724a7e62
+```
+
+Update this snapshot and compute mean/sample SD over all five completed NG
+results after 1303-1305 finish. Do not restart or overwrite the active run.
+
+## Cleanup after the interim result audit
+
+Cleanup was requested while seed 1303 was still active. The deletion command
+is restricted to the already verified and extracted 17112180 ZIP, obsolete
+8104551 archive/extraction, abandoned Parquet-to-LMDB output, downloaded wheel
+files, transfer bundles, failed clone and speed-test files created in this task.
+Training LMDB/CSV, NG raw data and fresh embeddings, virtual environment,
+checkpoints, saved predictions and logs are preserved.
+
+The cleanup SSH call timed out; follow-up SSH checks also timed out before
+printing output. Completion and reclaimed space are not yet verified. Do not
+report a successful cleanup or delete additional files before checking these
+specific targets. The ZIP is reproducible from the recorded official URL and
+MD5; rerunning the original server runner after removing it will download it
+again. Continue the existing run instead of rerunning that script.
 
 Verdict: original training and metric scripts require corrections before their
 numbers are reliable. New reproduction bypasses those failures while preserving
 architecture, optimizer, learning-rate schedule and original row split.
 
 Not checked: original published weight equivalence, source-sequence homology,
-real embedding coverage and runtime GPU behavior. Large datasets are deliberately
-not downloaded locally. No unrelated inference or classification redesign.
+and final five-seed metrics. Large datasets were not downloaded locally.
+No unrelated inference or classification redesign.
