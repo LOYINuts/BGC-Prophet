@@ -171,11 +171,21 @@ embeddings are reused directly; cleaned download archives are not fetched again.
 The runner refuses an existing new output directory. Original results remain
 in `runs/detection_17112180_ng_esm2/`.
 
-Local tests verify early stopping on equal/worse loss, patience reset after
-improvement, stopping without an epoch cap, constant LR, batch size, distinct
-best/last weights and existing deterministic seed/evaluation behavior.
-At the time of this code change, SSH command execution was timing out;
-old-process termination and new-run startup require explicit server verification.
+Local and server tests passed (four tests), covering equal/worse loss,
+patience reset after improvement, stopping without an epoch cap, constant LR,
+batch size, distinct best/last weights and deterministic seed/evaluation behavior.
+
+Restart verified on 2026-10-23 around 07:55 EDT. The old runner PID 2203147 and
+training wrapper/Python PIDs 4149566/4149569 were terminated with SIGTERM by user
+request. Original status was marked STOPPED; all original outputs were retained.
+Server synchronized training commit `a34b260b8732707fb9ac2fd93606efe8bf4500e8`
+via a bundle of the already pushed local commit because proxy 7891 refused
+connections. Paper runner PID 1950414 and training Python PID 1952669 started.
+Full coverage checks passed again: 3,684,284 training and 67,148 test genes.
+Seed 1301 config confirms `epochs=null`, patience 20, batch 64 and LR 0.01;
+its first training epoch started with 407 batches on GPU 1. Remaining seeds
+start sequentially after preceding training and NG testing finish. No results
+from this restarted experiment were available at launch.
 
 ## Reproduction settings and commands (original run)
 
