@@ -126,7 +126,58 @@ seed runs, independent output files, reproducible repeated predictions,
 checkpoint loading and refusal to overwrite previous runs. Real embedding
 coverage and GPU forward/backward checks passed before the active run.
 
-## Reproduction settings and commands
+## Paper protocol correction and restart
+
+The supplied Lai et al. (2025), DOI `10.1093/nar/gkaf305`, PDF page 4,
+Materials and methods, "Model architecture and configuration", explicitly states
+AdamW, learning rate 1e-2, batch size 64 and no fixed epoch count. Validation
+loss must fail to decrease for 20 consecutive epochs before early stopping;
+the checkpoint with minimum validation loss is the final model.
+
+The previous 200-epoch run used LR 0.0005, batch 32 and exponential decay,
+inferred from repository scripts and model paths before the paper was provided.
+It is a repository-configuration experiment, not a faithful reproduction of the
+paper's optimization settings. Its results above are retained for provenance.
+The user requested stopping that experiment and restarting seeds 1301-1305
+under the paper settings. Never mix its partial results with the restarted run.
+
+The revised reproduction module defaults to LR 0.01, batch 64, patience 20,
+strictly lower validation BCE as improvement, and no fixed epoch limit.
+An explicit `--epochs` is an optional cap for smoke checks only; the server
+experiment does not pass it. Equal BCE counts as non-improvement. The best
+checkpoint is saved on improvement, last checkpoint at termination, and
+`training_status.json` records completed epochs, best epoch, stale count and
+termination reason. Every seed starts from scratch and uses its own split.
+
+The paper body specifies no learning-rate scheduler, weight decay value or
+train/validation split fraction. Constant LR is used instead of retaining the
+old exponential schedule. Weight decay 0.01 and original stratified 80/20 row
+split remain explicit repository-derived settings. Runtime is PyTorch 2.5.1,
+whereas the paper states PyTorch 2.0.0. These are disclosed implementation
+choices; supplementary settings and exact published-weight equivalence have
+not been verified. Model architecture, official paired training data and the
+fresh ESM2 NG test encoding are retained. NG is never used for stopping.
+
+Server restart command, after terminating only the old experiment processes:
+
+```bash
+nohup bash scripts/run_server.sh \
+  > /home/gonghang/codes/BGC-Prophet-experiment-paper.log 2>&1 < /dev/null &
+```
+
+New outputs: `runs/detection_17112180_ng_esm2_paper/`.
+New status: `runs/paper-experiment.status`. Existing verified LMDB and NG
+embeddings are reused directly; cleaned download archives are not fetched again.
+The runner refuses an existing new output directory. Original results remain
+in `runs/detection_17112180_ng_esm2/`.
+
+Local tests verify early stopping on equal/worse loss, patience reset after
+improvement, stopping without an epoch cap, constant LR, batch size, distinct
+best/last weights and existing deterministic seed/evaluation behavior.
+At the time of this code change, SSH command execution was timing out;
+old-process termination and new-run startup require explicit server verification.
+
+## Reproduction settings and commands (original run)
 
 Use Python 3.12 and `requirements-training.txt`. Pins include PyTorch 2.5.1;
 Linux wheels use CUDA 12.4, compatible with server driver 560.28.03.
@@ -181,7 +232,8 @@ Server repository is `/home/gonghang/codes/BGC-Prophet`. Server proxy is
 and downloads. User chose GPU 1 despite an existing shared GPU workload.
 Use the paired CSV and LMDB from record 17112180 for all five seeds.
 The earlier repository CSV statistics above describe the initial audit, not the
-final selected training data. Model and optimizer settings remain unchanged.
+Model and optimizer settings for this original run are recorded below; the
+paper-protocol correction above supersedes them for new experiments.
 
 Our independent NG test source is
 `/home/gonghang/codes/my-bgc-v2/data/raw/ng/`: GenBank

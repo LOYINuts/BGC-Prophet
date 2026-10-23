@@ -2,6 +2,7 @@
 import argparse
 import csv
 import hashlib
+import itertools
 import json
 import os
 from pathlib import Path
@@ -97,16 +98,17 @@ def main():
     parser.add_argument("--test-lmdb", type=Path, help="Omit to train and report validation only")
     parser.add_argument("--output", type=Path, default=Path("runs/detection"))
     parser.add_argument("--seeds", type=int, nargs="+", default=[1301, 1302, 1303, 1304, 1305])
-    parser.add_argument("--epochs", type=int, default=200)
-    parser.add_argument("--batch-size", type=int, default=32)
-    parser.add_argument("--learning-rate", type=float, default=0.0005)
+    parser.add_argument("--epochs", type=int, help="Optional epoch cap; default trains until early stopping")
+    parser.add_argument("--patience", type=int, default=20)
+    parser.add_argument("--batch-size", type=int, default=64)
+    parser.add_argument("--learning-rate", type=float, default=0.01)
     parser.add_argument("--max-len", type=int, default=128)
     parser.add_argument("--workers", type=int, default=0)
     parser.add_argument("--device", choices=["cuda", "cpu"], default="cuda")
     parser.add_argument("--check-only", action="store_true")
     args = parser.parse_args()
-    if args.epochs < 1 or args.batch_size < 1 or args.workers != 0 or len(set(args.seeds)) != len(args.seeds):
-        parser.error("Positive epochs/batch size, unique seeds and --workers 0 required (LMDB transaction stays in process)")
+    if (args.epochs is not None and args.epochs < 1) or args.patience < 1 or args.batch_size < 1 or args.workers != 0 or len(set(args.seeds)) != len(args.seeds):
+        parser.error("Positive epoch cap/patience/batch size, unique seeds and --workers 0 required")
     for path in ((args.dataset, args.test_dataset) if args.test_lmdb else (args.dataset,)):
         if not path.is_file():
             parser.error(f"Missing CSV: {path}")
@@ -145,6 +147,8 @@ def main():
                   evaluation_split="test" if test else "validation",
                   validation_ratio=0.2, nhead=5, encoder_layers=2, transformer_dropout=0.1,
                   mlp_dropout=0.1, threshold=0.5, selection="minimum validation BCE",
+                  scheduler="none; paper does not specify LR decay", weight_decay=0.01,
+                  stopping="patience consecutive epochs without strictly lower validation BCE",
                   split_policy="per-seed stratified rows, matching original DataReader")
     results = []
     for seed in args.seeds:
@@ -161,10 +165,10 @@ def main():
                                       max_len=args.max_len, dim_feedforward=1280,
                                       transformer_dropout=0.1, mlp_dropout=0.1).to(args.device)
         optimizer = torch.optim.AdamW(model.parameters(), lr=args.learning_rate, weight_decay=0.01)
-        scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.95)
-        best_loss, best_epoch = float("inf"), None
+        best_loss, best_epoch, stale_epochs = float("inf"), None, 0
+        stop_reason = None
         with (folder / "epochs.jsonl").open("w", encoding="utf-8") as history:
-            for epoch in range(args.epochs):
+            for epoch in itertools.count():
                 train_metrics, _, _ = run_epoch(model, loaders[0], args.device, optimizer)
                 validation_metrics, _, _ = run_epoch(model, loaders[1], args.device)
                 if not np.isfinite(validation_metrics["bce"]):
@@ -175,10 +179,21 @@ def main():
                 history.flush()
                 print(json.dumps({"seed": seed, **row}), flush=True)
                 if validation_metrics["bce"] < best_loss:
-                    best_loss, best_epoch = validation_metrics["bce"], epoch
+                    best_loss, best_epoch, stale_epochs = validation_metrics["bce"], epoch, 0
                     torch.save(model.state_dict(), folder / "best.pt")
-                if epoch >= 5 and scheduler.get_last_lr()[0] > 5e-6:
-                    scheduler.step()
+                else:
+                    stale_epochs += 1
+                if stale_epochs >= args.patience:
+                    stop_reason = "early_stopping"
+                    break
+                if args.epochs is not None and epoch + 1 >= args.epochs:
+                    stop_reason = "epoch_cap"
+                    break
+        write_json(folder / "training_status.json", {
+            "completed_epochs": epoch + 1, "best_epoch": best_epoch,
+            "best_validation_bce": best_loss, "stale_epochs": stale_epochs,
+            "patience": args.patience, "stop_reason": stop_reason,
+        })
         torch.save(model.state_dict(), folder / "last.pt")
         model.load_state_dict(torch.load(folder / "best.pt", map_location=args.device, weights_only=True))
         evaluation_split = "test" if test else "validation"

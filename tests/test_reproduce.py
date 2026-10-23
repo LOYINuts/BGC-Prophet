@@ -7,6 +7,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 
 import lmdb
 import numpy as np
@@ -16,7 +17,7 @@ from Bio.Seq import Seq
 from Bio.SeqFeature import SeqFeature, SimpleLocation
 from Bio.SeqRecord import SeqRecord
 
-from bgc_prophet.train.reproduce import metrics
+from bgc_prophet.train.reproduce import main, metrics
 from bgc_prophet.train.model import transformerEncoderNet
 from scripts.prepare_ng import windows
 
@@ -83,6 +84,60 @@ class ReproductionTests(unittest.TestCase):
             self.assertIn("Seed output exists", refused.stderr)
             checked = subprocess.run(command + ["--check-only"], capture_output=True, text=True)
             self.assertEqual(checked.returncode, 0, checked.stderr)
+
+    def test_early_stopping_and_best_checkpoint(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            database = root / "lmdb"
+            env = lmdb.open(str(database), map_size=1_000_000)
+            with env.begin(write=True) as transaction:
+                transaction.put(b"gene", pickle.dumps({"mean_representations": {6: torch.zeros(320)}}))
+            env.close()
+            dataset = root / "data.csv"
+            with dataset.open("w", newline="") as handle:
+                writer = csv.DictWriter(handle, fieldnames=["labels", "TDsentence", "TDlabels"])
+                writer.writeheader()
+                for _ in range(10):
+                    writer.writerow({"labels": "NRP", "TDsentence": " ".join(["gene"] * 8),
+                                     "TDlabels": "0 0 0 0 1 1 1 1"})
+            validation_losses = iter([0.4, 0.4, 0.3, 0.3, 0.31])
+            observed_rates = []
+            observed_batches = []
+            calls = []
+            def fake_epoch(model, loader, device, optimizer=None):
+                calls.append(optimizer is not None)
+                if optimizer is not None:
+                    observed_rates.append(optimizer.param_groups[0]["lr"])
+                    observed_batches.append(loader.batch_size)
+                    with torch.no_grad():
+                        next(model.parameters()).fill_(len(observed_rates))
+                    loss = 0.5
+                else:
+                    loss = next(validation_losses, 0.3)
+                return {"bce": loss, **metrics([0, 1], [0.1, 0.9])}, np.array([[0, 1]]), np.array([[0.1, 0.9]])
+            arguments = ["reproduce", "--dataset", str(dataset), "--lmdb", str(database),
+                         "--device", "cpu", "--max-len", "8", "--seeds", "1301",
+                         "--patience", "2", "--output", str(root / "run")]
+            with patch.object(sys, "argv", arguments), patch("bgc_prophet.train.reproduce.run_epoch", side_effect=fake_epoch) as mocked_epoch:
+                main()
+                mocked_epoch.reset_mock()
+            folder = root / "run/seed_1301"
+            status = json.loads((folder / "training_status.json").read_text())
+            self.assertEqual(status["completed_epochs"], 5)
+            self.assertEqual(status["best_epoch"], 2)
+            self.assertEqual(status["stale_epochs"], 2)
+            self.assertEqual(status["stop_reason"], "early_stopping")
+            self.assertEqual(observed_rates, [0.01] * 5)
+            self.assertEqual(observed_batches, [64] * 5)
+            self.assertEqual(calls, [True, False] * 5 + [False])
+            best = torch.load(folder / "best.pt", weights_only=True)
+            last = torch.load(folder / "last.pt", weights_only=True)
+            first_key = next(iter(best))
+            self.assertTrue(torch.all(best[first_key] == 3))
+            self.assertTrue(torch.all(last[first_key] == 5))
+            config = json.loads((folder / "config.json").read_text())
+            self.assertIsNone(config["epochs"])
+            self.assertEqual(config["patience"], 2)
 
     def test_prepare_ng(self):
         self.assertEqual(len(list(windows(list(range(256))))), 2)
