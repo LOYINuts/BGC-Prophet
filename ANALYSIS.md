@@ -292,6 +292,145 @@ Encoding model name, PyTorch version and model weight SHA256 are recorded in
 `data/ng/esm2_encoding.json`. Official archive and paired CSV MD5 checks,
 extraction, and coverage of all 3,684,284 training genes passed before training.
 
+## Final paper-parameter experiment results
+
+Verified snapshot: server 2026-10-24. The paper-parameter runner completed on
+2026-10-23 at 20:28:53 EDT (UTC-4). All five seeds have test results and
+`training_status.json`; `summary.json` includes exactly seeds 1301-1305.
+These results supersede the interim status for the restarted experiment, not
+the separately preserved old-configuration results below.
+
+Training commit: `a34b260b8732707fb9ac2fd93606efe8bf4500e8`.
+Data, model, ESM2 encoding and 80/20 per-seed splits are described above.
+This run uses LR 0.01, batch 64, AdamW weight decay 0.01, constant LR and
+validation-BCE patience 20, with no epoch cap. It implements the main-text
+training parameters; it does not establish equivalence to the authors' original
+training environment or undocumented supplementary choices.
+
+### Five-seed NG metrics and early stopping
+
+All metrics are fractions. AP denotes average precision. Best epoch is
+zero-based; completed epochs is a count. Every seed terminated through early
+stopping with 20 consecutive non-improving validation epochs.
+
+| Seed | Epochs | Best epoch | Best val BCE | NG BCE | Accuracy | Precision | Recall | F1 | AUROC | AP |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 1301 | 24 | 3 | 0.159363 | 0.247951 | 0.943942 | 0.000000 | 0.000000 | 0.000000 | 0.617024 | 0.077485 |
+| 1302 | 26 | 5 | 0.153642 | 0.361307 | 0.943942 | 0.000000 | 0.000000 | 0.000000 | 0.648324 | 0.093208 |
+| 1303 | 48 | 27 | 0.154856 | 0.225576 | 0.939814 | 0.106742 | 0.009992 | 0.018274 | 0.593625 | 0.072631 |
+| 1304 | 23 | 2 | 0.165866 | 0.262513 | 0.934685 | 0.083554 | 0.016566 | 0.027650 | 0.616894 | 0.081086 |
+| 1305 | 24 | 3 | 0.156426 | 0.315914 | 0.943942 | 0.000000 | 0.000000 | 0.000000 | 0.630256 | 0.086308 |
+
+| NG metric | Five-seed mean | Sample SD (ddof=1) |
+| --- | --- | --- |
+| BCE | 0.282652 | 0.055137 |
+| Accuracy | 0.941265 | 0.004090 |
+| Precision | 0.038059 | 0.052756 |
+| Recall | 0.005312 | 0.007636 |
+| F1 | 0.009185 | 0.013006 |
+| AUROC | 0.621225 | 0.020088 |
+| AP | 0.082143 | 0.007954 |
+
+| Seed | TN | FP | FN | TP | Predicted positive positions |
+| --- | --- | --- | --- | --- | --- |
+| 1301 | 64,037 | 0 | 3,803 | 0 | 0 |
+| 1302 | 64,037 | 0 | 3,803 | 0 | 0 |
+| 1303 | 63,719 | 318 | 3,765 | 38 | 356 |
+| 1304 | 63,346 | 691 | 3,740 | 63 | 754 |
+| 1305 | 64,037 | 0 | 3,803 | 0 | 0 |
+
+### What these results establish
+
+Three of five seeds predict every test position as negative at threshold 0.5.
+The other two recover only 38 and 63 of 3,803 positive positions. The aggregate
+accuracy is below the all-negative baseline (0.943942), and AP is only modestly
+above positive prevalence (0.056058). AUROC around 0.62 also indicates poor
+ranking; this is not explained solely by a badly chosen 0.5 threshold.
+The run does not reproduce the paper's reported NG AUROC of 0.919 (main text,
+page 8) or precision of 0.592 at threshold 0.5. Differences in NG preprocessing
+and runtime still prevent an exact like-for-like published-score comparison.
+
+The previous repository-configuration run had NG F1 0.525739/0.556102 and AUROC
+0.898743/0.908042 for seeds 1301/1302. The restarted run's minimum validation
+BCE is 0.153642-0.165866 versus 0.025353/0.029238 previously. Thus deterioration
+is visible in validation loss before NG evaluation. Several settings changed
+together: LR, batch size, scheduler and stopping rule. The evidence does not
+isolate the cause, and does not show that early stopping itself is wrong.
+A numerically completed experiment is not evidence that the model learned a
+useful detector under these settings.
+
+### Verification and outstanding checks
+
+Saved results cover five unique expected seeds. All status files report
+`stop_reason=early_stopping`, patience 20 and stale count 20. For each seed,
+`completed_epochs - 1 - best_epoch = 20`, consistent with the implementation.
+All confusion matrices total 67,840 positions and contain 3,803 positive labels.
+Accuracy, precision, recall and F1 are independently consistent with the saved
+counts; five-seed means and sample SD recomputed locally match `summary.json`.
+
+All five NG prediction arrays were independently audited using NumPy and
+scikit-learn; accuracy, precision, recall, F1, AUROC, AP and confusion matrices
+match saved metrics within 1e-12. Predictions are finite and contain the
+expected 67,840 positions and 3,803 positive labels. Best epochs match the
+minimum recorded validation BCE. Audit ended with
+`ALL_FIVE_ARRAY_METRICS_VERIFIED`.
+
+| Seed | Train BCE at selected epoch | Validation F1 | NG median probability | NG maximum probability |
+| --- | --- | --- | --- | --- |
+| 1301 | 0.171158 | 0.000147 | 0.119275 | 0.383465 |
+| 1302 | 0.178536 | 0.000000 | 0.258738 | 0.453145 |
+| 1303 | 0.169817 | 0.287952 | 0.072205 | 0.728597 |
+| 1304 | 0.182950 | 0.041534 | 0.078505 | 0.695119 |
+| 1305 | 0.177997 | 0.000000 | 0.201618 | 0.451402 |
+
+Weak validation F1 and elevated train BCE show that NG mismatch alone cannot
+explain this outcome. Seeds 1301/1302/1305 have no NG score reaching 0.5;
+this accounts for their all-negative confusion matrices. It does not establish
+why optimization failed, nor justify choosing a threshold on the NG test set.
+
+### Further experiments: small diagnostics first
+
+Additional investigation is warranted because the detector is unusable at the
+fixed evaluation threshold. Repeating all five seeds without changing the
+hypothesis would add little evidence. Recommended next steps, not yet launched:
+
+1. Inspect per-epoch train/validation BCE and positive score distributions in
+   more detail; the completed prediction-array audit above already rules out
+   incorrect saved NG metric calculations. Check representative official
+   training embeddings against freshly encoded proteins where source sequences
+   are available. These are read-only diagnostics.
+2. Run one controlled pilot at seed 1301: LR 0.0005, batch 64, patience 20,
+   constant LR, same split/data/model. Compare validation convergence with the
+   completed LR 0.01 run. Only LR changes, isolating its effect. Treat this as
+   a diagnostic protocol, not the paper setting.
+3. If the pilot converges, investigate the authors' exact optimizer/scheduler
+   and supplementary configuration. Use training/validation evidence for
+   decisions; do not select LR or threshold by best NG test score.
+4. For a separate generalization benchmark, split source BGC/genome groups
+   before augmented windows to reduce related-context leakage. Keep this
+   distinct from the original paper-protocol comparison.
+
+Run another full five-seed comparison only after a concrete diagnosis and a
+fixed protocol. No additional GPU experiments were started by this result audit.
+
+### Artifacts and cleanup
+
+Final output: `runs/detection_17112180_ng_esm2_paper/` under the server repository.
+Each seed retains best/last checkpoints, history, split, config, stopping status,
+test metrics and prediction arrays. `results.csv`, `results.json` and
+`summary.json` provide final per-seed and aggregate results. Runner log:
+`/home/gonghang/codes/BGC-Prophet-experiment-paper.log`.
+
+The previous audit already removed approximately 64 GiB of redundant downloads
+and abandoned preparation outputs. This audit identified only the remaining
+14 MiB `/tmp/bgc-prophet-gonghang/paper-restart.bundle` and small wheel download
+lists as transfer leftovers. These three files were deleted and their absence
+explicitly checked over SSH. The final experiment summary and active official
+LMDB were confirmed present afterward. Retained: complete extracted official
+LMDB and CSV, raw NG and ESM2 embeddings, environment, both experiment
+directories, provenance and all result logs. No further large disposable
+archives were identified.
+
 ## Experiment results: interim snapshot, 2026-10-23
 
 This snapshot was checked around 07:25 EDT (server time, UTC-4). The experiment
@@ -405,6 +544,6 @@ Verdict: original training and metric scripts require corrections before their
 numbers are reliable. New reproduction bypasses those failures while preserving
 architecture, optimizer, learning-rate schedule and original row split.
 
-Not checked: original published weight equivalence, source-sequence homology,
-and final five-seed metrics. Large datasets were not downloaded locally.
-No unrelated inference or classification redesign.
+Not checked: original published weight equivalence and source-sequence homology.
+All five final NG metric arrays were independently verified. Large datasets
+were not downloaded locally. No unrelated inference redesign.
