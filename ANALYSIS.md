@@ -292,6 +292,45 @@ Encoding model name, PyTorch version and model weight SHA256 are recorded in
 `data/ng/esm2_encoding.json`. Official archive and paired CSV MD5 checks,
 extraction, and coverage of all 3,684,284 training genes passed before training.
 
+## Authorized convergence investigation and usable baseline
+
+The user requested an experimental investigation and authorized returning to
+the old configuration if the abnormal metrics cannot be resolved. The goal is
+reliable, measured results; no score is guaranteed and no test labels, threshold
+or metric definitions are changed.
+
+`scripts/investigate_training.sh` runs on GPU 1 in two sequential phases:
+
+1. Validation-only diagnostic, seed 1301, LR 0.0005, batch 64, no scheduler,
+   patience 20 and a 12-epoch cap. Compare its first 12 epochs against the
+   existing LR 0.01 seed 1301 history. Same data hash, split and architecture;
+   batch is fixed at 64. This isolates LR over the common epoch budget.
+   It does not use NG predictions to choose hyperparameters. Diagnostic report:
+   `runs/lr-diagnostic.json`; pilot directory:
+   `runs/diagnostic_lr0005_batch64_seed1301/`.
+2. Complete five-seed legacy baseline in a separate directory,
+   `runs/detection_17112180_ng_esm2_legacy_complete/`: LR 0.0005, batch 32,
+   AdamW weight decay 0.01, original exponential schedule gamma 0.95 after
+   epoch >=5 while LR >5e-6, 200 epochs, early stopping disabled. All seeds
+   1301-1305 train from scratch. Selection remains minimum validation BCE,
+   followed by independent NG evaluation at threshold 0.5. This restores the
+   previously successful protocol, not a claim of matching paper parameters.
+
+This baseline is authorized regardless of whether the short pilot completely
+identifies the cause, so producing the requested usable-model comparison does
+not depend on another user confirmation. If low LR improves validation while
+all other common-epoch settings match, that establishes LR sensitivity in this
+implementation; it does not establish an error in the paper or independently
+validate its unspecified scheduler. If it fails, inspect input/gradient and
+implementation differences before claiming a diagnosis.
+
+Reproduction CLI now exposes `--scheduler none|original` and `--patience 0`
+for the explicitly capped legacy experiment. Paper defaults remain unchanged.
+`--patience 0` without an epoch cap is rejected. Tests cover legacy epoch caps,
+disabled early stopping and exact onset of LR decay, in addition to paper
+patience behavior. Status is `runs/investigation.status`; all previous results
+remain intact. No unrelated GPU jobs are stopped.
+
 ## Final paper-parameter experiment results
 
 Verified snapshot: server 2026-10-24. The paper-parameter runner completed on

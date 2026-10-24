@@ -99,7 +99,8 @@ def main():
     parser.add_argument("--output", type=Path, default=Path("runs/detection"))
     parser.add_argument("--seeds", type=int, nargs="+", default=[1301, 1302, 1303, 1304, 1305])
     parser.add_argument("--epochs", type=int, help="Optional epoch cap; default trains until early stopping")
-    parser.add_argument("--patience", type=int, default=20)
+    parser.add_argument("--patience", type=int, default=20, help="0 disables early stopping; requires --epochs")
+    parser.add_argument("--scheduler", choices=["none", "original"], default="none")
     parser.add_argument("--batch-size", type=int, default=64)
     parser.add_argument("--learning-rate", type=float, default=0.01)
     parser.add_argument("--max-len", type=int, default=128)
@@ -107,7 +108,7 @@ def main():
     parser.add_argument("--device", choices=["cuda", "cpu"], default="cuda")
     parser.add_argument("--check-only", action="store_true")
     args = parser.parse_args()
-    if (args.epochs is not None and args.epochs < 1) or args.patience < 1 or args.batch_size < 1 or args.workers != 0 or len(set(args.seeds)) != len(args.seeds):
+    if (args.epochs is not None and args.epochs < 1) or args.patience < 0 or (args.patience == 0 and args.epochs is None) or args.batch_size < 1 or args.workers != 0 or len(set(args.seeds)) != len(args.seeds):
         parser.error("Positive epoch cap/patience/batch size, unique seeds and --workers 0 required")
     for path in ((args.dataset, args.test_dataset) if args.test_lmdb else (args.dataset,)):
         if not path.is_file():
@@ -147,7 +148,8 @@ def main():
                   evaluation_split="test" if test else "validation",
                   validation_ratio=0.2, nhead=5, encoder_layers=2, transformer_dropout=0.1,
                   mlp_dropout=0.1, threshold=0.5, selection="minimum validation BCE",
-                  scheduler="none; paper does not specify LR decay", weight_decay=0.01,
+                  scheduler_protocol="constant LR" if args.scheduler == "none" else "gamma 0.95 after epoch >=5 while LR >5e-6",
+                  weight_decay=0.01,
                   stopping="patience consecutive epochs without strictly lower validation BCE",
                   split_policy="per-seed stratified rows, matching original DataReader")
     results = []
@@ -165,6 +167,7 @@ def main():
                                       max_len=args.max_len, dim_feedforward=1280,
                                       transformer_dropout=0.1, mlp_dropout=0.1).to(args.device)
         optimizer = torch.optim.AdamW(model.parameters(), lr=args.learning_rate, weight_decay=0.01)
+        scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.95) if args.scheduler == "original" else None
         best_loss, best_epoch, stale_epochs = float("inf"), None, 0
         stop_reason = None
         with (folder / "epochs.jsonl").open("w", encoding="utf-8") as history:
@@ -183,7 +186,9 @@ def main():
                     torch.save(model.state_dict(), folder / "best.pt")
                 else:
                     stale_epochs += 1
-                if stale_epochs >= args.patience:
+                if scheduler is not None and epoch >= 5 and scheduler.get_last_lr()[0] > 5e-6:
+                    scheduler.step()
+                if args.patience and stale_epochs >= args.patience:
                     stop_reason = "early_stopping"
                     break
                 if args.epochs is not None and epoch + 1 >= args.epochs:

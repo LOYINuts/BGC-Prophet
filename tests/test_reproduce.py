@@ -138,6 +138,23 @@ class ReproductionTests(unittest.TestCase):
             config = json.loads((folder / "config.json").read_text())
             self.assertIsNone(config["epochs"])
             self.assertEqual(config["patience"], 2)
+            observed_rates.clear()
+            calls.clear()
+            # Constant validation loss must not stop a legacy run; decay starts after epoch 5.
+            validation_losses = iter([0.4] * 8)
+            legacy = arguments.copy()
+            legacy[legacy.index(str(root / "run"))] = str(root / "legacy")
+            legacy[legacy.index("--patience") + 1] = "0"
+            legacy += ["--epochs", "8", "--scheduler", "original"]
+            with patch.object(sys, "argv", legacy), patch("bgc_prophet.train.reproduce.run_epoch", side_effect=fake_epoch) as mocked_epoch:
+                main()
+                mocked_epoch.reset_mock()
+            status = json.loads((root / "legacy/seed_1301/training_status.json").read_text())
+            self.assertEqual(status["completed_epochs"], 8)
+            self.assertEqual(status["stop_reason"], "epoch_cap")
+            self.assertEqual(observed_rates[:6], [0.01] * 6)
+            self.assertAlmostEqual(observed_rates[6], 0.01 * 0.95)
+            self.assertAlmostEqual(observed_rates[7], 0.01 * 0.95 ** 2)
 
     def test_prepare_ng(self):
         self.assertEqual(len(list(windows(list(range(256))))), 2)
