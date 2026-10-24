@@ -331,6 +331,13 @@ disabled early stopping and exact onset of LR decay, in addition to paper
 patience behavior. Status is `runs/investigation.status`; all previous results
 remain intact. No unrelated GPU jobs are stopped.
 
+Launch verified on server 2026-10-24 at 06:07:52 EDT using committed and pushed
+revision `18c01ff`. Runner PID 1173992 and diagnostic Python PID 1174121 were
+observed. Status reported `Validation-only LR diagnostic`. Persistent combined
+log: `/home/gonghang/codes/BGC-Prophet-investigation.log`.
+The first diagnostic results and final legacy five-seed results are pending;
+do not claim the suspected LR effect has been experimentally established yet.
+
 ## Final paper-parameter experiment results
 
 Verified snapshot: server 2026-10-24. The paper-parameter runner completed on
