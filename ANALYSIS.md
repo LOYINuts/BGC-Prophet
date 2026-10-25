@@ -338,6 +338,32 @@ log: `/home/gonghang/codes/BGC-Prophet-investigation.log`.
 The first diagnostic results and final legacy five-seed results are pending;
 do not claim the suspected LR effect has been experimentally established yet.
 
+## Requested three-GPU restart of unfinished seeds
+
+User explicitly authorized terminating the active sequential legacy experiment
+and retraining only unfinished seeds 1302-1305 from scratch. Completed seed 1301
+must be preserved and used in the final aggregate. Partial seed 1302 outputs
+remain archived in the old experiment directory; new outputs never overwrite
+those files. Before termination, verify actual current processes and that no
+additional seeds have finished since the last check.
+
+`scripts/run_remaining_parallel.sh` assigns GPU 0 to 1302 then 1305, GPU 1 to
+1303, GPU 2 to 1304. Every worker uses the same 200-epoch legacy protocol.
+It refuses existing new outputs, any already-completed assigned seed, or an
+existing reproduction process. Each seed writes to an isolated output root,
+preventing concurrent result-file races. New outputs and per-seed logs are in
+`runs/legacy_remaining_parallel/`.
+`scripts/summarize_parallel.py` combines preserved 1301 with the four completed
+workers only after checking data hashes, architecture, LR, batch, scheduler,
+patience and 200-epoch completion. Synthetic tests verify aggregation and
+rejection of mixed configurations. Five local tests passed.
+
+SSH attempts during preparation repeatedly timed out. No termination or
+three-GPU start has been verified yet. The sequential run may still be active;
+check before launching. Never stop unrelated GPU processes. Once connected,
+terminate the specific verified old runner and Python process, preserve results,
+synchronize the pushed commit and launch the parallel script under nohup.
+
 ## Investigation update: 2026-10-25
 
 Server was reachable at 03:22 EDT (UTC-4). The 12-epoch validation-only pilot

@@ -156,6 +156,32 @@ class ReproductionTests(unittest.TestCase):
             self.assertAlmostEqual(observed_rates[6], 0.01 * 0.95)
             self.assertAlmostEqual(observed_rates[7], 0.01 * 0.95 ** 2)
 
+    def test_parallel_aggregate(self):
+        from scripts.summarize_parallel import aggregate
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            folders = {}
+            for seed in range(1301, 1306):
+                folder = root / str(seed)
+                folder.mkdir()
+                folders[seed] = folder
+                config = dict(dataset_sha256="train", test_dataset_sha256="test", batch_size=32,
+                              learning_rate=0.0005, epochs=200, scheduler="original", patience=0,
+                              nhead=5, encoder_layers=2)
+                (folder / "config.json").write_text(json.dumps(config))
+                (folder / "training_status.json").write_text(json.dumps(dict(completed_epochs=200, stop_reason="epoch_cap")))
+                result = dict(seed=seed, evaluation_split="test", bce=0.1,
+                              **metrics([0, 1], [0.1, 0.9]))
+                (folder / "test_metrics.json").write_text(json.dumps(result))
+            aggregate(folders, root / "summary")
+            summary = json.loads((root / "summary/summary.json").read_text())
+            self.assertEqual(summary["metrics"]["f1"], {"mean": 1.0, "sample_std": 0.0})
+            config["batch_size"] = 64
+            (folders[1305] / "config.json").write_text(json.dumps(config))
+            with self.assertRaises(ValueError):
+                aggregate(folders, root / "invalid")
+            self.assertFalse((root / "invalid").exists())
+
     def test_prepare_ng(self):
         self.assertEqual(len(list(windows(list(range(256))))), 2)
         self.assertEqual(list(windows(list(range(129))))[-1], list(range(1, 129)))
