@@ -338,6 +338,63 @@ log: `/home/gonghang/codes/BGC-Prophet-investigation.log`.
 The first diagnostic results and final legacy five-seed results are pending;
 do not claim the suspected LR effect has been experimentally established yet.
 
+## Investigation update: 2026-10-25
+
+Server was reachable at 03:22 EDT (UTC-4). The 12-epoch validation-only pilot
+finished on 2026-10-24 at 07:06:47 EDT; the full legacy five-seed run then
+started automatically. It has not finished: seed 1301 completed 200 epochs and
+NG testing; seed 1302 completed 14 epochs during inspection; 1303-1305 have not
+started. Training Python PID 1602604 remains active. No new run was launched
+by this status audit.
+
+### Controlled LR diagnostic result
+
+Both settings use seed 1301, identical split and training data, batch 64,
+constant LR, the same architecture and optimizer, and the first 12 epochs.
+Checkpoints in this comparison are selected using validation BCE only; NG was
+not evaluated for the pilot. Best epoch is zero-based.
+
+| LR | Best epoch within 12 | Train BCE | Validation BCE | Validation precision | Validation recall | Validation F1 | Validation AUROC | Validation AP |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 0.01 | 3 | 0.171158 | 0.159363 | 1.000000 | 0.000073 | 0.000147 | 0.810114 | 0.312890 |
+| 0.0005 | 11 | 0.040514 | 0.035285 | 0.910228 | 0.866080 | 0.887606 | 0.991542 | 0.941259 |
+
+Reducing LR by 20x restores useful learning under the same batch size and
+without adding a scheduler. Validation BCE decreases by about 77.9%, and
+validation F1 rises from effectively zero to 0.8876. This controlled experiment
+supports excessive LR as a major cause of the failed convergence in the current
+implementation. It is not proof that the paper is incorrect or that all other
+implementation choices are equivalent. One seed and 12 epochs do not quantify
+robustness across seeds. No test-based threshold tuning was performed.
+
+### Full normal-configuration run in progress
+
+Output: `runs/detection_17112180_ng_esm2_legacy_complete/`.
+Seed 1301 selected epoch 50 after 200 epochs. All saved test metrics are exactly
+equal to the earlier seed 1301 run, including BCE, AUROC, AP and confusion
+matrix. This is a repeated-run metric check, not a new independent seed.
+
+| Seed | Completed epochs at inspection | NG precision | NG recall | NG F1 | NG AUROC | NG AP |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1301 | 200, tested | 0.548415 | 0.504865 | 0.525739 | 0.898743 | 0.531919 |
+| 1302 | 14, running | Pending | Pending | Pending | Pending | Pending |
+| 1303-1305 | Not started | Pending | Pending | Pending | Pending | Pending |
+
+Recommendation: let the already authorized full legacy baseline finish. The
+LR diagnostic has identified a credible, experimentally supported convergence
+factor and the repeated baseline has recovered its earlier metrics; no extra
+hyperparameter sweep is needed now. Assess final mean/sample SD after all five
+seeds finish. Keep the main-text parameter attempt as a disclosed unsuccessful
+reproduction, and label the usable baseline with its actual repository-derived
+LR, batch size and schedule. Exact published-score equivalence remains unproven.
+
+The 14 MiB `/tmp/bgc-prophet-gonghang/investigation.bundle` was deleted and its
+absence verified. Complete official LMDB presence was checked afterward.
+Active training, environment, all model/prediction/history outputs, diagnostic
+report and small audit/provenance files were retained. Previously cleaned large
+archives were not downloaded again. No additional large disposable files were
+identified in the bounded temporary-directory inspection.
+
 ## Final paper-parameter experiment results
 
 Verified snapshot: server 2026-10-24. The paper-parameter runner completed on
