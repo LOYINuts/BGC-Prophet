@@ -355,9 +355,13 @@ GPU 0 runs 1303, GPU 1 runs 1304, GPU 2 runs 1305. Aggregate preserves both
 completed seeds from the original complete-baseline directory. Partial 1303
 stays in that directory and new runs use isolated directories.
 
-A SIGTERM command targeting only old runner 1173992 and wrappers/Python
-1602600/1602604 was sent. Verify stop completion and new-worker startup before
-claiming the switch has finished. Five local tests and shell syntax check pass.
+Stop and launch verified: old runner and training PIDs no longer appeared after
+SIGTERM. Server synchronized commit `7b79572`; parallel runner PID 1449295
+launched three Python workers: 1449391 (1303), 1449392 (1304), 1449393 (1305).
+Commands confirm LR0.0005, batch32, original scheduler, no early stopping and
+200 epochs, each in its own new directory. Subsequent logs confirm all three started training batches, and process
+environments confirm `CUDA_VISIBLE_DEVICES=0/1/2` for 1303/1304/1305 respectively.
+Preserved complete seeds 1301/1302 will be combined only after workers finish.
 
 ## Requested three-GPU restart of unfinished seeds
 
