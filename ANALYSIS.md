@@ -338,6 +338,27 @@ log: `/home/gonghang/codes/BGC-Prophet-investigation.log`.
 The first diagnostic results and final legacy five-seed results are pending;
 do not claim the suspected LR effect has been experimentally established yet.
 
+## Three-GPU launch correction after successful slow SSH login
+
+Windows OpenSSH (`C:/Windows/System32/OpenSSH/ssh.exe`) completed public-key
+login using the same local ED25519 key after a long delay; Git's bundled SSH
+had rejected or timed out on prior attempts. Do not infer password requirements
+from those failures. Use Windows OpenSSH and background log capture for slow
+sessions in this environment.
+
+The fresh status check found that seed 1302 had completed while waiting for
+access. Seeds 1301 and 1302 both have 200 epochs and saved NG metrics. Seed
+1303 had 145 completed epochs, and 1304/1305 had not started. User authorization
+to stop current training therefore applies to partial 1303; completed 1302
+must not be retrained. Launcher and aggregate paths were updated accordingly:
+GPU 0 runs 1303, GPU 1 runs 1304, GPU 2 runs 1305. Aggregate preserves both
+completed seeds from the original complete-baseline directory. Partial 1303
+stays in that directory and new runs use isolated directories.
+
+A SIGTERM command targeting only old runner 1173992 and wrappers/Python
+1602600/1602604 was sent. Verify stop completion and new-worker startup before
+claiming the switch has finished. Five local tests and shell syntax check pass.
+
 ## Requested three-GPU restart of unfinished seeds
 
 User explicitly authorized terminating the active sequential legacy experiment

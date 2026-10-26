@@ -9,8 +9,11 @@ output=runs/legacy_remaining_parallel
 official=/tmp/bgc-prophet-gonghang/official17112180
 test -f "$base/seed_1301/test_metrics.json"
 test ! -e "$output"
-# Only the four unfinished seeds may be retrained by this launcher.
-for seed in 1302 1303 1304 1305; do
+# Only unfinished seeds may be retrained by this launcher.
+for seed in 1301 1302; do
+    test -f "$base/seed_$seed/test_metrics.json"
+done
+for seed in 1303 1304 1305; do
     if test -f "$base/seed_$seed/test_metrics.json"; then
         echo "Seed $seed already completed; revise assignment before launch" >&2
         exit 1
@@ -35,9 +38,9 @@ run_worker() {
           --output "$output/seed_$seed" > "$output/seed_$seed.log" 2>&1
     done
 }
-run_worker 0 1302 1305 & p0=$!
-run_worker 1 1303 & p1=$!
-run_worker 2 1304 & p2=$!
+run_worker 0 1303 & p0=$!
+run_worker 1 1304 & p1=$!
+run_worker 2 1305 & p2=$!
 failed=0
 for pid in "$p0" "$p1" "$p2"; do
     wait "$pid" || failed=1

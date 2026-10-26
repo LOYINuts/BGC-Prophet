@@ -1,4 +1,4 @@
-"""Combine preserved seed 1301 with four separately trained legacy seeds."""
+"""Combine preserved completed seeds with separately trained legacy seeds."""
 import csv
 import json
 from pathlib import Path
@@ -42,6 +42,6 @@ def aggregate(folders, output):
 
 if __name__ == "__main__":
     root = Path("runs/legacy_remaining_parallel")
-    folders = {1301: Path("runs/detection_17112180_ng_esm2_legacy_complete/seed_1301")}
-    folders.update({seed: root / f"seed_{seed}/seed_{seed}" for seed in range(1302, 1306)})
+    folders = {seed: Path(f"runs/detection_17112180_ng_esm2_legacy_complete/seed_{seed}") for seed in (1301, 1302)}
+    folders.update({seed: root / f"seed_{seed}/seed_{seed}" for seed in range(1303, 1306)})
     aggregate(folders, root)
