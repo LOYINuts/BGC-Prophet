@@ -338,6 +338,74 @@ log: `/home/gonghang/codes/BGC-Prophet-investigation.log`.
 The first diagnostic results and final legacy five-seed results are pending;
 do not claim the suspected LR effect has been experimentally established yet.
 
+## Completed legacy baseline and next optimization, 2026-10-27
+
+All five legacy seeds completed 200 epochs and independent NG testing. The
+three-GPU aggregate in `runs/legacy_remaining_parallel/summary.json` combines
+preserved seeds 1301/1302 with restarted seeds 1303/1304/1305; no seed is counted
+twice. Model selection is minimum validation BCE and test threshold is 0.5.
+
+| Seed | Best epoch (zero-based) | Validation BCE | NG precision | NG recall | NG F1 | NG AUROC | NG AP |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 1301 | 50 | 0.025353 | 0.548415 | 0.504865 | 0.525739 | 0.898743 | 0.531919 |
+| 1302 | 58 | 0.029238 | 0.641678 | 0.490665 | 0.556102 | 0.908042 | 0.560613 |
+| 1303 | 63 | 0.023945 | 0.631776 | 0.533263 | 0.578354 | 0.900948 | 0.588273 |
+| 1304 | 70 | 0.028835 | 0.670500 | 0.444649 | 0.534704 | 0.892890 | 0.545343 |
+| 1305 | 73 | 0.023842 | 0.628876 | 0.495924 | 0.554543 | 0.899459 | 0.572149 |
+
+| NG metric | Mean | Sample SD (ddof=1) |
+| --- | --- | --- |
+| BCE | 0.157216 | 0.008820 |
+| Accuracy | 0.954679 | 0.003246 |
+| Precision | 0.624249 | 0.045475 |
+| Recall | 0.493873 | 0.032054 |
+| F1 | 0.549888 | 0.020520 |
+| AUROC | 0.900016 | 0.005431 |
+| AP | 0.559659 | 0.022080 |
+
+This is a stable, useful baseline across all five seeds, with F1 0.526-0.578.
+It substantially outperforms the failed main-text-parameter run (mean F1
+0.009185, AUROC 0.621225). The controlled LR diagnostic supports LR sensitivity
+as a cause in this implementation. It does not prove exact equivalence to the
+published training procedure. Recall remains about one half of annotated gene
+positions; accuracy is only about 1.1 percentage points above all-negative
+accuracy, so F1, AP and recall are more informative.
+
+A server audit independently recomputes metrics from each prediction array,
+checks 200 history epochs, minimum-BCE selection and aggregate mean/sample SD.
+Record its successful completion before treating array verification as passed.
+The aggregate already checks matching data hashes and training protocols.
+
+### Authorized next optimization: training-positive-weight pilots
+
+Hypothesis: imbalance in gene-level BCE contributes to missed positive genes.
+Test weights 1 (control), 2 and 4 using seed 1301, LR 0.0005, batch 32,
+original LR schedule, same split, architecture and data. Training loss is
+`mean(BCE * (positive_weight if target == 1 else 1))`; it is not renormalized.
+The training `bce` log and all validation BCE remain ordinary unweighted BCE,
+so checkpoint and stopping comparisons do not change units. Weight 1 exactly
+preserves the existing objective and gradients. No model architecture changes.
+
+Three pilots run on GPUs 0/1/2, each capped at 100 epochs with patience 20.
+NG inputs are deliberately omitted. Pilots select checkpoints by minimum
+validation BCE; compare validation AP, with smaller weight breaking ties.
+The 100-epoch cap and patience differ from the completed 200-epoch baseline,
+so the concurrent weight-1 control is required. A single-seed apparent gain
+requires validation-only confirmation on seeds 1302/1303 before any new NG
+evaluation. Different GPU architectures can also introduce numerical effects.
+Do not promise improvement or replace the completed baseline on a pilot alone.
+
+Launcher: `scripts/run_weight_pilots.sh`. Comparison:
+`scripts/compare_weight_pilots.py`. Output: `runs/positive_weight_pilot/`,
+with per-weight histories, predictions and `comparison.json` after completion.
+CLI `--positive-weight` defaults to 1 and rejects nonfinite/nonpositive values.
+Seven local tests passed, including exact weighted-loss/gradient calculations,
+validation-only selection and rejection of mismatched pilot splits.
+
+The remaining 14 MiB three-GPU transfer bundle is eligible for deletion after
+code synchronization. Preserve extracted training data, NG data/embeddings,
+all baseline and failed-run checkpoints, predictions, histories and logs.
+
 ## Three-GPU launch correction after successful slow SSH login
 
 Windows OpenSSH (`C:/Windows/System32/OpenSSH/ssh.exe`) completed public-key
