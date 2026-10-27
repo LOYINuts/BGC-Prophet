@@ -1,5 +1,12 @@
 # Repository analysis and detection reproduction
 
+Final fixed-baseline report: [BASELINE_RESULTS.md](BASELINE_RESULTS.md).
+Use that report for five-seed model comparisons; machine-readable evidence is
+[reports/baseline/audit.json](reports/baseline/audit.json). The 2026-10-27 audit
+passed metric recomputation, per-file fingerprints and full NG inference from
+all five best checkpoints. This file preserves the audit history and explicitly
+separated unsuccessful or interrupted experiments.
+
 This repository detects biosynthetic gene clusters from protein sequences, then
 classifies their products. Expected use: one researcher processing genomes or
 running GPU experiments. Analysis covers package entry points, preprocessing,

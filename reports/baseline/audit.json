@@ -1,0 +1,1257 @@
+{
+  "audit_time_utc": "2026-10-27T08:05:50.787422+00:00",
+  "audit_script_sha256": "ff299bdccf567f7325dc3190dd974208700868dddb89b6499dabc459aca45c32",
+  "server_repository": "/home/gonghang/codes/BGC-Prophet",
+  "threshold": 0.5,
+  "aggregation": "mean and sample SD, ddof=1",
+  "metric_unit": "gene positions in 128-gene windows, overlapping tails retained",
+  "inference_recheck_requested": true,
+  "seeds": [
+    {
+      "seed": 1301,
+      "run_directory": "/home/gonghang/codes/BGC-Prophet/runs/detection_17112180_ng_esm2_legacy_complete/seed_1301",
+      "config": {
+        "dataset": "/tmp/bgc-prophet-gonghang/official17112180/BGC_train_dataset_inbalence.csv",
+        "lmdb": "/tmp/bgc-prophet-gonghang/official17112180/extracted/lmdb_BGC",
+        "test_dataset": "data/ng/prepared/dataset.csv",
+        "test_lmdb": "data/ng/esm2_lmdb",
+        "output": "runs/detection_17112180_ng_esm2_legacy_complete",
+        "seeds": [
+          1301,
+          1302,
+          1303,
+          1304,
+          1305
+        ],
+        "epochs": 200,
+        "patience": 0,
+        "scheduler": "original",
+        "batch_size": 32,
+        "learning_rate": 0.0005,
+        "max_len": 128,
+        "workers": 0,
+        "device": "cuda",
+        "check_only": false,
+        "git_commit": "18c01ff66f3d78155c351a7ecfb41d1e434f48a2",
+        "torch_version": "2.5.1+cu124",
+        "numpy_version": "1.26.4",
+        "device_name": "NVIDIA RTX A6000",
+        "dataset_sha256": "5c814849a10c7bfd7cc95d184f78ad993969d24188b29f2d8d6d2fe2412b5c51",
+        "test_dataset_sha256": "6f5fccbf2b095667f637598b8acf27d9ef76aebdd9f3e8e80b77aaff724a7e62",
+        "evaluation_split": "test",
+        "validation_ratio": 0.2,
+        "nhead": 5,
+        "encoder_layers": 2,
+        "transformer_dropout": 0.1,
+        "mlp_dropout": 0.1,
+        "threshold": 0.5,
+        "selection": "minimum validation BCE",
+        "scheduler_protocol": "gamma 0.95 after epoch >=5 while LR >5e-6",
+        "weight_decay": 0.01,
+        "stopping": "patience consecutive epochs without strictly lower validation BCE",
+        "split_policy": "per-seed stratified rows, matching original DataReader",
+        "seed": 1301
+      },
+      "stopping": {
+        "completed_epochs": 200,
+        "best_epoch": 50,
+        "best_validation_bce": 0.025353129754333965,
+        "stale_epochs": 149,
+        "patience": 0,
+        "stop_reason": "epoch_cap"
+      },
+      "selected_validation": {
+        "bce": 0.025353129754333965,
+        "accuracy": 0.9924878883420486,
+        "precision": 0.9388853624476323,
+        "recall": 0.9058128995909169,
+        "f1": 0.9220526630760024,
+        "auroc": 0.9947439177047785,
+        "average_precision": 0.965193375033326,
+        "confusion_matrix": [
+          [
+            789026,
+            2407
+          ],
+          [
+            3845,
+            36978
+          ]
+        ]
+      },
+      "test_metrics": {
+        "seed": 1301,
+        "evaluation_split": "test",
+        "best_epoch": 50,
+        "validation_bce": 0.025353129754333965,
+        "bce": 0.16338773759187392,
+        "accuracy": 0.948938679245283,
+        "precision": 0.5484147386461011,
+        "recall": 0.5048645805942676,
+        "f1": 0.5257393209200438,
+        "auroc": 0.8987426806085201,
+        "average_precision": 0.5319185746372528,
+        "confusion_matrix": [
+          [
+            62456,
+            1581
+          ],
+          [
+            1883,
+            1920
+          ]
+        ]
+      },
+      "split_audit": {
+        "train_rows": 26008,
+        "validation_rows": 6502,
+        "shared_train_validation_gene_ids": 126062,
+        "shared_source_BGC_ids": 1670,
+        "shared_training_test_gene_ids": 0
+      },
+      "artifact_manifest": {
+        "config.json": {
+          "path": "/home/gonghang/codes/BGC-Prophet/runs/detection_17112180_ng_esm2_legacy_complete/seed_1301/config.json",
+          "bytes": 1386,
+          "sha256": "9446efb8e883ea1953f522120c0ec340ec3a1046380235754ec5a78042178775"
+        },
+        "split.json": {
+          "path": "/home/gonghang/codes/BGC-Prophet/runs/detection_17112180_ng_esm2_legacy_complete/seed_1301/split.json",
+          "bytes": 346542,
+          "sha256": "e0e8b06a5148e7f65eda7b1d71e2683d819e65577ca78c34425313cc25fcba3b"
+        },
+        "epochs.jsonl": {
+          "path": "/home/gonghang/codes/BGC-Prophet/runs/detection_17112180_ng_esm2_legacy_complete/seed_1301/epochs.jsonl",
+          "bytes": 123338,
+          "sha256": "61ae100d5a76c8f2dcb4b6f5cac803a8e82cb6c36303e9bb2331b313fd213b10"
+        },
+        "training_status.json": {
+          "path": "/home/gonghang/codes/BGC-Prophet/runs/detection_17112180_ng_esm2_legacy_complete/seed_1301/training_status.json",
+          "bytes": 167,
+          "sha256": "c5342589cbf2b44c56614b7ea6deba474aa092a4675e33dafdf6c251c31258a6"
+        },
+        "best.pt": {
+          "path": "/home/gonghang/codes/BGC-Prophet/runs/detection_17112180_ng_esm2_legacy_complete/seed_1301/best.pt",
+          "bytes": 10056842,
+          "sha256": "5f26eae0831bc143c6282c2f9b393789a7b60694923898dd7633ef4dbf9ee4d5"
+        },
+        "last.pt": {
+          "path": "/home/gonghang/codes/BGC-Prophet/runs/detection_17112180_ng_esm2_legacy_complete/seed_1301/last.pt",
+          "bytes": 10056842,
+          "sha256": "1a6816089ee0923ed0255c72ba32f87e95c676d1eebbb1df30be78b65f12e9aa"
+        },
+        "test_metrics.json": {
+          "path": "/home/gonghang/codes/BGC-Prophet/runs/detection_17112180_ng_esm2_legacy_complete/seed_1301/test_metrics.json",
+          "bytes": 444,
+          "sha256": "d83f367d26f0e83c3d3faa077b823d595e165cb8cdfaef2e9585426573d7f0c4"
+        },
+        "test_predictions.npz": {
+          "path": "/home/gonghang/codes/BGC-Prophet/runs/detection_17112180_ng_esm2_legacy_complete/seed_1301/test_predictions.npz",
+          "bytes": 253227,
+          "sha256": "07a477056ddd164aa1d60fd46b617e0c66c07a32f6b3c3b5320d04bd3b6a09a9"
+        }
+      },
+      "checkpoint_inference": {
+        "device": "cuda",
+        "max_abs_probability_difference": 0.0,
+        "threshold_predictions_identical": true
+      }
+    },
+    {
+      "seed": 1302,
+      "run_directory": "/home/gonghang/codes/BGC-Prophet/runs/detection_17112180_ng_esm2_legacy_complete/seed_1302",
+      "config": {
+        "dataset": "/tmp/bgc-prophet-gonghang/official17112180/BGC_train_dataset_inbalence.csv",
+        "lmdb": "/tmp/bgc-prophet-gonghang/official17112180/extracted/lmdb_BGC",
+        "test_dataset": "data/ng/prepared/dataset.csv",
+        "test_lmdb": "data/ng/esm2_lmdb",
+        "output": "runs/detection_17112180_ng_esm2_legacy_complete",
+        "seeds": [
+          1301,
+          1302,
+          1303,
+          1304,
+          1305
+        ],
+        "epochs": 200,
+        "patience": 0,
+        "scheduler": "original",
+        "batch_size": 32,
+        "learning_rate": 0.0005,
+        "max_len": 128,
+        "workers": 0,
+        "device": "cuda",
+        "check_only": false,
+        "git_commit": "18c01ff66f3d78155c351a7ecfb41d1e434f48a2",
+        "torch_version": "2.5.1+cu124",
+        "numpy_version": "1.26.4",
+        "device_name": "NVIDIA RTX A6000",
+        "dataset_sha256": "5c814849a10c7bfd7cc95d184f78ad993969d24188b29f2d8d6d2fe2412b5c51",
+        "test_dataset_sha256": "6f5fccbf2b095667f637598b8acf27d9ef76aebdd9f3e8e80b77aaff724a7e62",
+        "evaluation_split": "test",
+        "validation_ratio": 0.2,
+        "nhead": 5,
+        "encoder_layers": 2,
+        "transformer_dropout": 0.1,
+        "mlp_dropout": 0.1,
+        "threshold": 0.5,
+        "selection": "minimum validation BCE",
+        "scheduler_protocol": "gamma 0.95 after epoch >=5 while LR >5e-6",
+        "weight_decay": 0.01,
+        "stopping": "patience consecutive epochs without strictly lower validation BCE",
+        "split_policy": "per-seed stratified rows, matching original DataReader",
+        "seed": 1302
+      },
+      "stopping": {
+        "completed_epochs": 200,
+        "best_epoch": 58,
+        "best_validation_bce": 0.029238155955045968,
+        "stale_epochs": 141,
+        "patience": 0,
+        "stop_reason": "epoch_cap"
+      },
+      "selected_validation": {
+        "bce": 0.029238155955045968,
+        "accuracy": 0.9917200957397724,
+        "precision": 0.9383570421632705,
+        "recall": 0.890840957757446,
+        "f1": 0.9139818501828713,
+        "auroc": 0.9912145820290758,
+        "average_precision": 0.9570809651854356,
+        "confusion_matrix": [
+          [
+            788755,
+            2405
+          ],
+          [
+            4486,
+            36610
+          ]
+        ]
+      },
+      "test_metrics": {
+        "seed": 1302,
+        "evaluation_split": "test",
+        "best_epoch": 58,
+        "validation_bce": 0.029238155955045968,
+        "bce": 0.14263554882469043,
+        "accuracy": 0.9560878537735849,
+        "precision": 0.6416781292984869,
+        "recall": 0.4906652642650539,
+        "f1": 0.5561019222172553,
+        "auroc": 0.9080416305963923,
+        "average_precision": 0.5606130922184036,
+        "confusion_matrix": [
+          [
+            62995,
+            1042
+          ],
+          [
+            1937,
+            1866
+          ]
+        ]
+      },
+      "split_audit": {
+        "train_rows": 26008,
+        "validation_rows": 6502,
+        "shared_train_validation_gene_ids": 123581,
+        "shared_source_BGC_ids": 1668,
+        "shared_training_test_gene_ids": 0
+      },
+      "artifact_manifest": {
+        "config.json": {
+          "path": "/home/gonghang/codes/BGC-Prophet/runs/detection_17112180_ng_esm2_legacy_complete/seed_1302/config.json",
+          "bytes": 1386,
+          "sha256": "2faf950a3711ac1e805026f948890b38d20582697986dddde752cdda38ea5b71"
+        },
+        "split.json": {
+          "path": "/home/gonghang/codes/BGC-Prophet/runs/detection_17112180_ng_esm2_legacy_complete/seed_1302/split.json",
+          "bytes": 346542,
+          "sha256": "e2bf53ca880eef5da64bdcc4f3a63a981d01b73f61f2ecc9fa425238556c0d2f"
+        },
+        "epochs.jsonl": {
+          "path": "/home/gonghang/codes/BGC-Prophet/runs/detection_17112180_ng_esm2_legacy_complete/seed_1302/epochs.jsonl",
+          "bytes": 123371,
+          "sha256": "b14d8a4306fa7725c4f149f3a748205eee6667054fb87b93c95b81d4a5bb0f0e"
+        },
+        "training_status.json": {
+          "path": "/home/gonghang/codes/BGC-Prophet/runs/detection_17112180_ng_esm2_legacy_complete/seed_1302/training_status.json",
+          "bytes": 167,
+          "sha256": "1974112a8e2672cc0fe9f01f11d3784067cb4b93878c0e854975bb4b68c0a116"
+        },
+        "best.pt": {
+          "path": "/home/gonghang/codes/BGC-Prophet/runs/detection_17112180_ng_esm2_legacy_complete/seed_1302/best.pt",
+          "bytes": 10056842,
+          "sha256": "51ce677bfcc4a52ac353e0a0a960552a15a1d00cf9f32d472a441c637b17cd88"
+        },
+        "last.pt": {
+          "path": "/home/gonghang/codes/BGC-Prophet/runs/detection_17112180_ng_esm2_legacy_complete/seed_1302/last.pt",
+          "bytes": 10056842,
+          "sha256": "b4cac17a7ba4ba8c2edd1027cf29fd45a9a5d72364b12153ea63cd8022b20ebb"
+        },
+        "test_metrics.json": {
+          "path": "/home/gonghang/codes/BGC-Prophet/runs/detection_17112180_ng_esm2_legacy_complete/seed_1302/test_metrics.json",
+          "bytes": 445,
+          "sha256": "2dfe04cfe87509c1636adfe98dc7f392b467880ca9a4cf349267e17abcd2a2c9"
+        },
+        "test_predictions.npz": {
+          "path": "/home/gonghang/codes/BGC-Prophet/runs/detection_17112180_ng_esm2_legacy_complete/seed_1302/test_predictions.npz",
+          "bytes": 252548,
+          "sha256": "e96cb32c702397ef36a66054f41632b0fd834aac7f5bb02c759d3a31a3c0416a"
+        }
+      },
+      "checkpoint_inference": {
+        "device": "cuda",
+        "max_abs_probability_difference": 0.0,
+        "threshold_predictions_identical": true
+      }
+    },
+    {
+      "seed": 1303,
+      "run_directory": "/home/gonghang/codes/BGC-Prophet/runs/legacy_remaining_parallel/seed_1303/seed_1303",
+      "config": {
+        "dataset": "/tmp/bgc-prophet-gonghang/official17112180/BGC_train_dataset_inbalence.csv",
+        "lmdb": "/tmp/bgc-prophet-gonghang/official17112180/extracted/lmdb_BGC",
+        "test_dataset": "data/ng/prepared/dataset.csv",
+        "test_lmdb": "data/ng/esm2_lmdb",
+        "output": "runs/legacy_remaining_parallel/seed_1303",
+        "seeds": [
+          1303
+        ],
+        "epochs": 200,
+        "patience": 0,
+        "scheduler": "original",
+        "batch_size": 32,
+        "learning_rate": 0.0005,
+        "max_len": 128,
+        "workers": 0,
+        "device": "cuda",
+        "check_only": false,
+        "git_commit": "7b795727acf192e087fa0d120306c7eaf20869bb",
+        "torch_version": "2.5.1+cu124",
+        "numpy_version": "1.26.4",
+        "device_name": "NVIDIA RTX A6000",
+        "dataset_sha256": "5c814849a10c7bfd7cc95d184f78ad993969d24188b29f2d8d6d2fe2412b5c51",
+        "test_dataset_sha256": "6f5fccbf2b095667f637598b8acf27d9ef76aebdd9f3e8e80b77aaff724a7e62",
+        "evaluation_split": "test",
+        "validation_ratio": 0.2,
+        "nhead": 5,
+        "encoder_layers": 2,
+        "transformer_dropout": 0.1,
+        "mlp_dropout": 0.1,
+        "threshold": 0.5,
+        "selection": "minimum validation BCE",
+        "scheduler_protocol": "gamma 0.95 after epoch >=5 while LR >5e-6",
+        "weight_decay": 0.01,
+        "stopping": "patience consecutive epochs without strictly lower validation BCE",
+        "split_policy": "per-seed stratified rows, matching original DataReader",
+        "seed": 1303
+      },
+      "stopping": {
+        "completed_epochs": 200,
+        "best_epoch": 63,
+        "best_validation_bce": 0.02394462621566544,
+        "stale_epochs": 136,
+        "patience": 0,
+        "stop_reason": "epoch_cap"
+      },
+      "selected_validation": {
+        "bce": 0.02394462621566544,
+        "accuracy": 0.993009362503845,
+        "precision": 0.94596417597242,
+        "recall": 0.9119722550034922,
+        "f1": 0.9286572654812998,
+        "auroc": 0.9944194937814309,
+        "average_precision": 0.9698855765948406,
+        "confusion_matrix": [
+          [
+            788572,
+            2163
+          ],
+          [
+            3655,
+            37866
+          ]
+        ]
+      },
+      "test_metrics": {
+        "seed": 1303,
+        "evaluation_split": "test",
+        "best_epoch": 63,
+        "validation_bce": 0.02394462621566544,
+        "bce": 0.15619696739990757,
+        "accuracy": 0.9564121462264151,
+        "precision": 0.6317757009345795,
+        "recall": 0.5332632132526952,
+        "f1": 0.5783544845287324,
+        "auroc": 0.9009477478366346,
+        "average_precision": 0.5882729398957098,
+        "confusion_matrix": [
+          [
+            62855,
+            1182
+          ],
+          [
+            1775,
+            2028
+          ]
+        ]
+      },
+      "split_audit": {
+        "train_rows": 26008,
+        "validation_rows": 6502,
+        "shared_train_validation_gene_ids": 124624,
+        "shared_source_BGC_ids": 1682,
+        "shared_training_test_gene_ids": 0
+      },
+      "artifact_manifest": {
+        "config.json": {
+          "path": "/home/gonghang/codes/BGC-Prophet/runs/legacy_remaining_parallel/seed_1303/seed_1303/config.json",
+          "bytes": 1339,
+          "sha256": "0953cf62e3b05be2b5c5922e911e22df1f5027d659a736d10510bf6d47d60cd7"
+        },
+        "split.json": {
+          "path": "/home/gonghang/codes/BGC-Prophet/runs/legacy_remaining_parallel/seed_1303/seed_1303/split.json",
+          "bytes": 346542,
+          "sha256": "8ed0a6ef1305476c33e1712acdf0ebcb500da03b3e40f69dce60abd33d09d4c7"
+        },
+        "epochs.jsonl": {
+          "path": "/home/gonghang/codes/BGC-Prophet/runs/legacy_remaining_parallel/seed_1303/seed_1303/epochs.jsonl",
+          "bytes": 123348,
+          "sha256": "3219c9a441558b0ada883b8e071b3a4bf03c511cb8f6f40177b958b81dc49a6e"
+        },
+        "training_status.json": {
+          "path": "/home/gonghang/codes/BGC-Prophet/runs/legacy_remaining_parallel/seed_1303/seed_1303/training_status.json",
+          "bytes": 166,
+          "sha256": "fbcc146c0ad3b8e53b9789feebedde9ce796272460f79874befeeb47078b3829"
+        },
+        "best.pt": {
+          "path": "/home/gonghang/codes/BGC-Prophet/runs/legacy_remaining_parallel/seed_1303/seed_1303/best.pt",
+          "bytes": 10056842,
+          "sha256": "7b0273550b521accbd5965fd3797fdcef433a4a39417f01660f25905fc448356"
+        },
+        "last.pt": {
+          "path": "/home/gonghang/codes/BGC-Prophet/runs/legacy_remaining_parallel/seed_1303/seed_1303/last.pt",
+          "bytes": 10056842,
+          "sha256": "d0fd729e8a61acced0a347919c661181b5e3049888b7bc76b301ba0525cae4aa"
+        },
+        "test_metrics.json": {
+          "path": "/home/gonghang/codes/BGC-Prophet/runs/legacy_remaining_parallel/seed_1303/seed_1303/test_metrics.json",
+          "bytes": 444,
+          "sha256": "dc859df8235caa649db27bc933150f71e6982cf29b5e06ddf102b87b8acf0dd6"
+        },
+        "test_predictions.npz": {
+          "path": "/home/gonghang/codes/BGC-Prophet/runs/legacy_remaining_parallel/seed_1303/seed_1303/test_predictions.npz",
+          "bytes": 253635,
+          "sha256": "73a62aaa7843cfd8dce8d24c0c82b3c4ce447e3e9a52cff9df312c65d6e5ed75"
+        }
+      },
+      "checkpoint_inference": {
+        "device": "cuda",
+        "max_abs_probability_difference": 0.0,
+        "threshold_predictions_identical": true
+      }
+    },
+    {
+      "seed": 1304,
+      "run_directory": "/home/gonghang/codes/BGC-Prophet/runs/legacy_remaining_parallel/seed_1304/seed_1304",
+      "config": {
+        "dataset": "/tmp/bgc-prophet-gonghang/official17112180/BGC_train_dataset_inbalence.csv",
+        "lmdb": "/tmp/bgc-prophet-gonghang/official17112180/extracted/lmdb_BGC",
+        "test_dataset": "data/ng/prepared/dataset.csv",
+        "test_lmdb": "data/ng/esm2_lmdb",
+        "output": "runs/legacy_remaining_parallel/seed_1304",
+        "seeds": [
+          1304
+        ],
+        "epochs": 200,
+        "patience": 0,
+        "scheduler": "original",
+        "batch_size": 32,
+        "learning_rate": 0.0005,
+        "max_len": 128,
+        "workers": 0,
+        "device": "cuda",
+        "check_only": false,
+        "git_commit": "7b795727acf192e087fa0d120306c7eaf20869bb",
+        "torch_version": "2.5.1+cu124",
+        "numpy_version": "1.26.4",
+        "device_name": "NVIDIA RTX A6000",
+        "dataset_sha256": "5c814849a10c7bfd7cc95d184f78ad993969d24188b29f2d8d6d2fe2412b5c51",
+        "test_dataset_sha256": "6f5fccbf2b095667f637598b8acf27d9ef76aebdd9f3e8e80b77aaff724a7e62",
+        "evaluation_split": "test",
+        "validation_ratio": 0.2,
+        "nhead": 5,
+        "encoder_layers": 2,
+        "transformer_dropout": 0.1,
+        "mlp_dropout": 0.1,
+        "threshold": 0.5,
+        "selection": "minimum validation BCE",
+        "scheduler_protocol": "gamma 0.95 after epoch >=5 while LR >5e-6",
+        "weight_decay": 0.01,
+        "stopping": "patience consecutive epochs without strictly lower validation BCE",
+        "split_policy": "per-seed stratified rows, matching original DataReader",
+        "seed": 1304
+      },
+      "stopping": {
+        "completed_epochs": 200,
+        "best_epoch": 70,
+        "best_validation_bce": 0.02883507252273487,
+        "stale_epochs": 129,
+        "patience": 0,
+        "stop_reason": "epoch_cap"
+      },
+      "selected_validation": {
+        "bce": 0.02883507252273487,
+        "accuracy": 0.991835444863119,
+        "precision": 0.9355035605289929,
+        "recall": 0.896230782350218,
+        "f1": 0.9154461630352276,
+        "auroc": 0.9925641294541485,
+        "average_precision": 0.9598951266613616,
+        "confusion_matrix": [
+          [
+            788677,
+            2536
+          ],
+          [
+            4259,
+            36784
+          ]
+        ]
+      },
+      "test_metrics": {
+        "seed": 1304,
+        "evaluation_split": "test",
+        "best_epoch": 70,
+        "validation_bce": 0.02883507252273487,
+        "bce": 0.1646713522948184,
+        "accuracy": 0.9566185141509433,
+        "precision": 0.6704996034892942,
+        "recall": 0.44464896134630555,
+        "f1": 0.5347035573122529,
+        "auroc": 0.8928899185949603,
+        "average_precision": 0.5453430832660163,
+        "confusion_matrix": [
+          [
+            63206,
+            831
+          ],
+          [
+            2112,
+            1691
+          ]
+        ]
+      },
+      "split_audit": {
+        "train_rows": 26008,
+        "validation_rows": 6502,
+        "shared_train_validation_gene_ids": 124613,
+        "shared_source_BGC_ids": 1677,
+        "shared_training_test_gene_ids": 0
+      },
+      "artifact_manifest": {
+        "config.json": {
+          "path": "/home/gonghang/codes/BGC-Prophet/runs/legacy_remaining_parallel/seed_1304/seed_1304/config.json",
+          "bytes": 1339,
+          "sha256": "7ca91b11507022142464c5d62e2c10f69f526c0ae5a1a6719e187df983fcc046"
+        },
+        "split.json": {
+          "path": "/home/gonghang/codes/BGC-Prophet/runs/legacy_remaining_parallel/seed_1304/seed_1304/split.json",
+          "bytes": 346542,
+          "sha256": "c5b4c334d601636091d7523a1dea18958d75989f2891e808cc6e84287ea55df6"
+        },
+        "epochs.jsonl": {
+          "path": "/home/gonghang/codes/BGC-Prophet/runs/legacy_remaining_parallel/seed_1304/seed_1304/epochs.jsonl",
+          "bytes": 123333,
+          "sha256": "144098fe83e1cc14b16f5bdf917db6b4a28917c55dc93233a835611c500eb498"
+        },
+        "training_status.json": {
+          "path": "/home/gonghang/codes/BGC-Prophet/runs/legacy_remaining_parallel/seed_1304/seed_1304/training_status.json",
+          "bytes": 166,
+          "sha256": "a41b22fa4df85562f1e5b56f33aeb72b281f98eb3caa382bffe3d469fbe27c4a"
+        },
+        "best.pt": {
+          "path": "/home/gonghang/codes/BGC-Prophet/runs/legacy_remaining_parallel/seed_1304/seed_1304/best.pt",
+          "bytes": 10056842,
+          "sha256": "e507b8f1bc8ff7f58e0b5fc979c13d7db8b37992e5c490eb2127581118b92073"
+        },
+        "last.pt": {
+          "path": "/home/gonghang/codes/BGC-Prophet/runs/legacy_remaining_parallel/seed_1304/seed_1304/last.pt",
+          "bytes": 10056842,
+          "sha256": "5627185ca255af8496a09a3a69728cb9c7c0d35fdb92973a80a7af65306f4660"
+        },
+        "test_metrics.json": {
+          "path": "/home/gonghang/codes/BGC-Prophet/runs/legacy_remaining_parallel/seed_1304/seed_1304/test_metrics.json",
+          "bytes": 443,
+          "sha256": "ec98dd9e8a5fe03e0a3191efb101d099d9d1cf19099be65fc426d02ce1ff3511"
+        },
+        "test_predictions.npz": {
+          "path": "/home/gonghang/codes/BGC-Prophet/runs/legacy_remaining_parallel/seed_1304/seed_1304/test_predictions.npz",
+          "bytes": 253024,
+          "sha256": "744fe8d857e0e8f3f8df6817887199b3cdc379884897e5b7d83f9ca2fbb1a36e"
+        }
+      },
+      "checkpoint_inference": {
+        "device": "cuda",
+        "max_abs_probability_difference": 0.0,
+        "threshold_predictions_identical": true
+      }
+    },
+    {
+      "seed": 1305,
+      "run_directory": "/home/gonghang/codes/BGC-Prophet/runs/legacy_remaining_parallel/seed_1305/seed_1305",
+      "config": {
+        "dataset": "/tmp/bgc-prophet-gonghang/official17112180/BGC_train_dataset_inbalence.csv",
+        "lmdb": "/tmp/bgc-prophet-gonghang/official17112180/extracted/lmdb_BGC",
+        "test_dataset": "data/ng/prepared/dataset.csv",
+        "test_lmdb": "data/ng/esm2_lmdb",
+        "output": "runs/legacy_remaining_parallel/seed_1305",
+        "seeds": [
+          1305
+        ],
+        "epochs": 200,
+        "patience": 0,
+        "scheduler": "original",
+        "batch_size": 32,
+        "learning_rate": 0.0005,
+        "max_len": 128,
+        "workers": 0,
+        "device": "cuda",
+        "check_only": false,
+        "git_commit": "7b795727acf192e087fa0d120306c7eaf20869bb",
+        "torch_version": "2.5.1+cu124",
+        "numpy_version": "1.26.4",
+        "device_name": "NVIDIA A100X",
+        "dataset_sha256": "5c814849a10c7bfd7cc95d184f78ad993969d24188b29f2d8d6d2fe2412b5c51",
+        "test_dataset_sha256": "6f5fccbf2b095667f637598b8acf27d9ef76aebdd9f3e8e80b77aaff724a7e62",
+        "evaluation_split": "test",
+        "validation_ratio": 0.2,
+        "nhead": 5,
+        "encoder_layers": 2,
+        "transformer_dropout": 0.1,
+        "mlp_dropout": 0.1,
+        "threshold": 0.5,
+        "selection": "minimum validation BCE",
+        "scheduler_protocol": "gamma 0.95 after epoch >=5 while LR >5e-6",
+        "weight_decay": 0.01,
+        "stopping": "patience consecutive epochs without strictly lower validation BCE",
+        "split_policy": "per-seed stratified rows, matching original DataReader",
+        "seed": 1305
+      },
+      "stopping": {
+        "completed_epochs": 200,
+        "best_epoch": 73,
+        "best_validation_bce": 0.023841534378978197,
+        "stale_epochs": 126,
+        "patience": 0,
+        "stop_reason": "epoch_cap"
+      },
+      "selected_validation": {
+        "bce": 0.023841534378978197,
+        "accuracy": 0.9929937423100584,
+        "precision": 0.9452447375095105,
+        "recall": 0.9103143394475246,
+        "f1": 0.9274507608276411,
+        "auroc": 0.9951740826142101,
+        "average_precision": 0.9697651663586648,
+        "confusion_matrix": [
+          [
+            789154,
+            2159
+          ],
+          [
+            3672,
+            37271
+          ]
+        ]
+      },
+      "test_metrics": {
+        "seed": 1305,
+        "evaluation_split": "test",
+        "best_epoch": 73,
+        "validation_bce": 0.023841534378978197,
+        "bce": 0.15918960489754408,
+        "accuracy": 0.9553360849056604,
+        "precision": 0.6288762920973658,
+        "recall": 0.49592427031291086,
+        "f1": 0.5545427815348427,
+        "auroc": 0.8994590196961261,
+        "average_precision": 0.5721486874548372,
+        "confusion_matrix": [
+          [
+            62924,
+            1113
+          ],
+          [
+            1917,
+            1886
+          ]
+        ]
+      },
+      "split_audit": {
+        "train_rows": 26008,
+        "validation_rows": 6502,
+        "shared_train_validation_gene_ids": 125946,
+        "shared_source_BGC_ids": 1688,
+        "shared_training_test_gene_ids": 0
+      },
+      "artifact_manifest": {
+        "config.json": {
+          "path": "/home/gonghang/codes/BGC-Prophet/runs/legacy_remaining_parallel/seed_1305/seed_1305/config.json",
+          "bytes": 1335,
+          "sha256": "1d936db9ef9b408c3ca3d473b84fbf0a8b281a578dc135773e4d997aa39be857"
+        },
+        "split.json": {
+          "path": "/home/gonghang/codes/BGC-Prophet/runs/legacy_remaining_parallel/seed_1305/seed_1305/split.json",
+          "bytes": 346542,
+          "sha256": "37abbae604ac8fc731b93b8023a0701414343a60cc95047943d52e7f7ed31099"
+        },
+        "epochs.jsonl": {
+          "path": "/home/gonghang/codes/BGC-Prophet/runs/legacy_remaining_parallel/seed_1305/seed_1305/epochs.jsonl",
+          "bytes": 123359,
+          "sha256": "703a8b130aceb3788823583fdcea633f51c9f6929e1a2e10e648b033d644b235"
+        },
+        "training_status.json": {
+          "path": "/home/gonghang/codes/BGC-Prophet/runs/legacy_remaining_parallel/seed_1305/seed_1305/training_status.json",
+          "bytes": 167,
+          "sha256": "a26d2de6e975cf15f92170499aa7362142ac1bc7d17e189d5a714fc1541fa8df"
+        },
+        "best.pt": {
+          "path": "/home/gonghang/codes/BGC-Prophet/runs/legacy_remaining_parallel/seed_1305/seed_1305/best.pt",
+          "bytes": 10056842,
+          "sha256": "c9cadeff7c867ee054adfbca5baa8526e64eb729551f7768e4d0ced2b9f81e65"
+        },
+        "last.pt": {
+          "path": "/home/gonghang/codes/BGC-Prophet/runs/legacy_remaining_parallel/seed_1305/seed_1305/last.pt",
+          "bytes": 10056842,
+          "sha256": "4e0d9ed374f56e917dae3746df82575535539b3f2671d4e0882fe881aa7b80b3"
+        },
+        "test_metrics.json": {
+          "path": "/home/gonghang/codes/BGC-Prophet/runs/legacy_remaining_parallel/seed_1305/seed_1305/test_metrics.json",
+          "bytes": 446,
+          "sha256": "bedcd91212ab06f808e578b24431ec960fd3b9bf39879cb7b2c227b97e8ff939"
+        },
+        "test_predictions.npz": {
+          "path": "/home/gonghang/codes/BGC-Prophet/runs/legacy_remaining_parallel/seed_1305/seed_1305/test_predictions.npz",
+          "bytes": 253406,
+          "sha256": "2b8be07a8c4134e8677c68c4215a8b70f337e0c09fc45a42a55d884f865e0979"
+        }
+      },
+      "checkpoint_inference": {
+        "device": "cuda",
+        "max_abs_probability_difference": 2.4139881134033203e-06,
+        "threshold_predictions_identical": true
+      }
+    }
+  ],
+  "source_files": {
+    "/tmp/bgc-prophet-gonghang/official17112180/BGC_train_dataset_inbalence.csv": "5c814849a10c7bfd7cc95d184f78ad993969d24188b29f2d8d6d2fe2412b5c51",
+    "/home/gonghang/codes/BGC-Prophet/data/ng/prepared/dataset.csv": "6f5fccbf2b095667f637598b8acf27d9ef76aebdd9f3e8e80b77aaff724a7e62",
+    "/home/gonghang/codes/BGC-Prophet/data/ng/prepared/provenance.json": "dd262ac75018a71c78cbf6a54929b85b6589dc1b89e8adf74ab7df64fc94b4d1",
+    "/home/gonghang/codes/BGC-Prophet/data/ng/esm2_encoding.json": "cdafa6016b4bc767593bcf7890f318d6078aa097f5f946322a71ba76d31c73c3"
+  },
+  "limitations": [
+    "Repository-derived optimization settings differ from paper main text",
+    "Window-level random split can share genes/source BGCs across train and validation",
+    "No sequence-homology isolation demonstrated",
+    "Custom NG preprocessing differs from original tracked NG CSV",
+    "Archive checksum was verified at download; archive later deleted"
+  ],
+  "dataset": {
+    "training_rows": 32510,
+    "test_windows": 530,
+    "test_unique_genes": 67148,
+    "test_positions": 67840,
+    "positive_positions": 3803,
+    "negative_positions": 64037,
+    "targets_float32_sha256": "be8372501f5be5bf0e58afba403dcc206a53599e3aedbf55c877090d0f1aa10d"
+  },
+  "summary": {
+    "bce": {
+      "mean": 0.1572162422017669,
+      "sample_std": 0.008820370211288509
+    },
+    "accuracy": {
+      "mean": 0.9546786556603774,
+      "sample_std": 0.003245513144582212
+    },
+    "precision": {
+      "mean": 0.6242488928931655,
+      "sample_std": 0.045474693856512954
+    },
+    "recall": {
+      "mean": 0.49387325795424664,
+      "sample_std": 0.03205427819941774
+    },
+    "f1": {
+      "mean": 0.5498884133026254,
+      "sample_std": 0.02052039572031851
+    },
+    "auroc": {
+      "mean": 0.9000161994665267,
+      "sample_std": 0.005431194754028862
+    },
+    "average_precision": {
+      "mean": 0.5596592754944439,
+      "sample_std": 0.022080176697079706
+    }
+  },
+  "data/ng/prepared/provenance.json": {
+    "source_files": {
+      "/home/gonghang/codes/BGC-Prophet/data/ng/raw/ClusterFinder_Annotated_Contigs.full.gbk": "ffc77b5b4f7851037cef54205640b21acd0ffd41521986648288b41aaba44d45",
+      "/home/gonghang/codes/BGC-Prophet/data/ng/raw/291BGC.csv": "5508f05759eb021d60b6032281002970791efce38875b3551b2be580042e17bd"
+    },
+    "unique_genes": 67148,
+    "windows": 530,
+    "annotated_genes": 4203,
+    "annotated_genes_in_genbank": 3772,
+    "annotation_tags_absent_from_genbank": [
+      "MCBG_06048",
+      "SSDG_00035",
+      "SSDG_00089",
+      "SSDG_00185",
+      "SSDG_04325",
+      "SSDG_06129",
+      "SSDG_06352",
+      "SSDG_06509",
+      "SSDG_07501",
+      "SSDG_07518",
+      "SSDG_07538",
+      "SSIG_00095",
+      "SSIG_00096",
+      "SSIG_00097",
+      "SSIG_00098",
+      "SSIG_00099",
+      "SSIG_00100",
+      "SSIG_00101",
+      "SSIG_00102",
+      "SSIG_00103",
+      "SSIG_00104",
+      "SSIG_00421",
+      "SSIG_00422",
+      "SSIG_00423",
+      "SSIG_00424",
+      "SSIG_00425",
+      "SSIG_00426",
+      "SSIG_00427",
+      "SSIG_00428",
+      "SSIG_00429",
+      "SSIG_00430",
+      "SSIG_00431",
+      "SSIG_00432",
+      "SSIG_00433",
+      "SSIG_00434",
+      "SSIG_00435",
+      "SSIG_00606",
+      "SSIG_00607",
+      "SSIG_00608",
+      "SSIG_00609",
+      "SSIG_00610",
+      "SSIG_00611",
+      "SSIG_00612",
+      "SSIG_00614",
+      "SSIG_00615",
+      "SSIG_00616",
+      "SSIG_00617",
+      "SSIG_00618",
+      "SSIG_00619",
+      "SSIG_00620",
+      "SSIG_00621",
+      "SSIG_00622",
+      "SSIG_00623",
+      "SSIG_00624",
+      "SSIG_00625",
+      "SSIG_00626",
+      "SSIG_00627",
+      "SSIG_00628",
+      "SSIG_00629",
+      "SSIG_00630",
+      "SSIG_00631",
+      "SSIG_00632",
+      "SSIG_00633",
+      "SSIG_00634",
+      "SSIG_00868",
+      "SSIG_00869",
+      "SSIG_00870",
+      "SSIG_00871",
+      "SSIG_00872",
+      "SSIG_00873",
+      "SSIG_00874",
+      "SSIG_00875",
+      "SSIG_00876",
+      "SSIG_00877",
+      "SSIG_00878",
+      "SSIG_00879",
+      "SSIG_01781",
+      "SSIG_01782",
+      "SSIG_01783",
+      "SSIG_01784",
+      "SSIG_01785",
+      "SSIG_01955",
+      "SSIG_01956",
+      "SSIG_01957",
+      "SSIG_01958",
+      "SSIG_01959",
+      "SSIG_01960",
+      "SSIG_01961",
+      "SSIG_01962",
+      "SSIG_01963",
+      "SSIG_01964",
+      "SSIG_01965",
+      "SSIG_01966",
+      "SSIG_01967",
+      "SSIG_02287",
+      "SSIG_02288",
+      "SSIG_02289",
+      "SSIG_02290",
+      "SSIG_02291",
+      "SSIG_02292",
+      "SSIG_02293",
+      "SSIG_02509",
+      "SSIG_02510",
+      "SSIG_02511",
+      "SSIG_02512",
+      "SSIG_02513",
+      "SSIG_02514",
+      "SSIG_02515",
+      "SSIG_02516",
+      "SSIG_02517",
+      "SSIG_02518",
+      "SSIG_02519",
+      "SSIG_02520",
+      "SSIG_02868",
+      "SSIG_02869",
+      "SSIG_02870",
+      "SSIG_02871",
+      "SSIG_02872",
+      "SSIG_02873",
+      "SSIG_02916",
+      "SSIG_02917",
+      "SSIG_02918",
+      "SSIG_02919",
+      "SSIG_02920",
+      "SSIG_02921",
+      "SSIG_02922",
+      "SSIG_02923",
+      "SSIG_02924",
+      "SSIG_02958",
+      "SSIG_02959",
+      "SSIG_02960",
+      "SSIG_02961",
+      "SSIG_03167",
+      "SSIG_03168",
+      "SSIG_03169",
+      "SSIG_03170",
+      "SSIG_03171",
+      "SSIG_03172",
+      "SSIG_03173",
+      "SSIG_03174",
+      "SSIG_03175",
+      "SSIG_03176",
+      "SSIG_03177",
+      "SSIG_03178",
+      "SSIG_03179",
+      "SSIG_03180",
+      "SSIG_03181",
+      "SSIG_03182",
+      "SSIG_03183",
+      "SSIG_03184",
+      "SSIG_03185",
+      "SSIG_03186",
+      "SSIG_03187",
+      "SSIG_03188",
+      "SSIG_03189",
+      "SSIG_03190",
+      "SSIG_03191",
+      "SSIG_03192",
+      "SSIG_03193",
+      "SSIG_03194",
+      "SSIG_03350",
+      "SSIG_03351",
+      "SSIG_03352",
+      "SSIG_03353",
+      "SSIG_03354",
+      "SSIG_03355",
+      "SSIG_03356",
+      "SSIG_03357",
+      "SSIG_03358",
+      "SSIG_03359",
+      "SSIG_03360",
+      "SSIG_03361",
+      "SSIG_03362",
+      "SSIG_03363",
+      "SSIG_03364",
+      "SSIG_03365",
+      "SSIG_03366",
+      "SSIG_03367",
+      "SSIG_03368",
+      "SSIG_03369",
+      "SSIG_03859",
+      "SSIG_03860",
+      "SSIG_03861",
+      "SSIG_03862",
+      "SSIG_03863",
+      "SSIG_03864",
+      "SSIG_03865",
+      "SSIG_03866",
+      "SSIG_03867",
+      "SSIG_03868",
+      "SSIG_03869",
+      "SSIG_04017",
+      "SSIG_04018",
+      "SSIG_04019",
+      "SSIG_04020",
+      "SSIG_04021",
+      "SSIG_04022",
+      "SSIG_04023",
+      "SSIG_04024",
+      "SSIG_04025",
+      "SSIG_04026",
+      "SSIG_04039",
+      "SSIG_04040",
+      "SSIG_04041",
+      "SSIG_04042",
+      "SSIG_04043",
+      "SSIG_04219",
+      "SSIG_04220",
+      "SSIG_04221",
+      "SSIG_04222",
+      "SSIG_04223",
+      "SSIG_04224",
+      "SSIG_04225",
+      "SSIG_04226",
+      "SSIG_04227",
+      "SSIG_04228",
+      "SSIG_04229",
+      "SSIG_04230",
+      "SSIG_04286",
+      "SSIG_04287",
+      "SSIG_04288",
+      "SSIG_04289",
+      "SSIG_04290",
+      "SSIG_04291",
+      "SSIG_04292",
+      "SSIG_04293",
+      "SSIG_04294",
+      "SSIG_04295",
+      "SSIG_04296",
+      "SSIG_04297",
+      "SSIG_04298",
+      "SSIG_04299",
+      "SSIG_04300",
+      "SSIG_04301",
+      "SSIG_04302",
+      "SSIG_04303",
+      "SSIG_04304",
+      "SSIG_04305",
+      "SSIG_04340",
+      "SSIG_04341",
+      "SSIG_04342",
+      "SSIG_04343",
+      "SSIG_04344",
+      "SSIG_04345",
+      "SSIG_04657",
+      "SSIG_04658",
+      "SSIG_04659",
+      "SSIG_04660",
+      "SSIG_04661",
+      "SSIG_04662",
+      "SSIG_04663",
+      "SSIG_04842",
+      "SSIG_04843",
+      "SSIG_04844",
+      "SSIG_04845",
+      "SSIG_04846",
+      "SSIG_04847",
+      "SSIG_04848",
+      "SSIG_04849",
+      "SSIG_04850",
+      "SSIG_05054",
+      "SSIG_05055",
+      "SSIG_05056",
+      "SSIG_05057",
+      "SSIG_05058",
+      "SSIG_05059",
+      "SSIG_05060",
+      "SSIG_05061",
+      "SSIG_05098",
+      "SSIG_05099",
+      "SSIG_05100",
+      "SSIG_05101",
+      "SSIG_05102",
+      "SSIG_05103",
+      "SSIG_05104",
+      "SSIG_05336",
+      "SSIG_05337",
+      "SSIG_05338",
+      "SSIG_05339",
+      "SSIG_05345",
+      "SSIG_05346",
+      "SSIG_05347",
+      "SSIG_05348",
+      "SSIG_05349",
+      "SSIG_05350",
+      "SSIG_05351",
+      "SSIG_05352",
+      "SSIG_05353",
+      "SSIG_05354",
+      "SSIG_05693",
+      "SSIG_05694",
+      "SSIG_05695",
+      "SSIG_05696",
+      "SSIG_05697",
+      "SSIG_05740",
+      "SSIG_05741",
+      "SSIG_05742",
+      "SSIG_05743",
+      "SSIG_05744",
+      "SSIG_05745",
+      "SSIG_05746",
+      "SSIG_05747",
+      "SSIG_05748",
+      "SSIG_05749",
+      "SSIG_05750",
+      "SSIG_05751",
+      "SSIG_05752",
+      "SSIG_05753",
+      "SSIG_05754",
+      "SSIG_05755",
+      "SSIG_05756",
+      "SSIG_05757",
+      "SSIG_05758",
+      "SSIG_05759",
+      "SSIG_05760",
+      "SSIG_05761",
+      "SSIG_05762",
+      "SSIG_05763",
+      "SSIG_05764",
+      "SSIG_05765",
+      "SSIG_05766",
+      "SSIG_05767",
+      "SSIG_05768",
+      "SSIG_05769",
+      "SSIG_05770",
+      "SSIG_05771",
+      "SSIG_05772",
+      "SSIG_05773",
+      "SSIG_05774",
+      "SSIG_05775",
+      "SSIG_05776",
+      "SSIG_05777",
+      "SSIG_05778",
+      "SSIG_05779",
+      "SSIG_05780",
+      "SSIG_05781",
+      "SSIG_05782",
+      "SSIG_05783",
+      "SSIG_05784",
+      "SSIG_05785",
+      "SSIG_05786",
+      "SSIG_05820",
+      "SSIG_05821",
+      "SSIG_05822",
+      "SSIG_05823",
+      "SSIG_05824",
+      "SSIG_05825",
+      "SSIG_05826",
+      "SSIG_05827",
+      "SSIG_05828",
+      "SSIG_05829",
+      "SSIG_05901",
+      "SSIG_05902",
+      "SSIG_05903",
+      "SSIG_05904",
+      "SSIG_05905",
+      "SSIG_05906",
+      "SSIG_05907",
+      "SSIG_05908",
+      "SSIG_05909",
+      "SSIG_05910",
+      "SSIG_05911",
+      "SSIG_05912",
+      "SSIG_05943",
+      "SSIG_05944",
+      "SSIG_05945",
+      "SSIG_05946",
+      "SSIG_05947",
+      "SSIG_05948",
+      "SSIG_05949",
+      "SSIG_05950",
+      "SSIG_05951",
+      "SSIG_06174",
+      "SSIG_06175",
+      "SSIG_06176",
+      "SSIG_06177",
+      "SSIG_06178",
+      "SSIG_06563",
+      "SSIG_06564",
+      "SSIG_06565",
+      "SSIG_06566",
+      "SSIG_06567",
+      "SSIG_06568",
+      "SSIG_06569",
+      "SSIG_06570",
+      "SSIG_06571",
+      "SSIG_06572",
+      "SSIG_06573",
+      "SSIG_06574",
+      "SSIG_06575",
+      "SSIG_06576",
+      "SSIG_06577",
+      "SSIG_06578",
+      "SSIG_06579",
+      "SSIG_06680",
+      "SSIG_06681",
+      "SSIG_06682",
+      "SSIG_06683",
+      "SSIG_06684",
+      "SSIG_06685",
+      "SSIG_06876",
+      "SSIG_06877",
+      "SSIG_06878",
+      "SSIG_06920",
+      "SSIG_06921",
+      "SSIG_06922",
+      "SSIG_06930",
+      "SSIG_06931",
+      "SSIG_06932",
+      "SSIG_06933",
+      "SSIG_06934",
+      "SSIG_06935",
+      "SSIG_06936",
+      "SSIG_06937",
+      "SSIG_06938",
+      "SSIG_06939",
+      "SSIG_07011",
+      "SSIG_07012",
+      "SSIG_07013",
+      "SSIG_07014",
+      "SSIG_07015",
+      "SSIG_07016",
+      "SSIG_07101",
+      "SSIG_07102",
+      "SSIG_07103",
+      "SSIG_07104",
+      "SSIG_07105",
+      "SSIG_07106",
+      "SSIG_07107",
+      "SSIG_07108",
+      "SSIG_07109"
+    ],
+    "protocol": "GenBank CDS order per contig; stride 128; final window last 128; short contigs repeated",
+    "labels": "locus tag membership in 291BGC.csv; unmatched CDS negative",
+    "encoding_required": "fresh esm2_t6_8M_UR50D layer 6 mean; truncate proteins to 1022 residues",
+    "metrics_unit": "gene positions in windows, including overlapping contig tails"
+  },
+  "data/ng/esm2_encoding.json": {
+    "model": "esm2_t6_8M_UR50D",
+    "layer": 6,
+    "fresh_encoding": true,
+    "torch": "2.5.1+cu124",
+    "records": 67148,
+    "weights_sha256": "46f002a9870c9bdecd0ea887acb1f9a38a6b561e8f8bf8a6990b679b9d31b928"
+  },
+  "audit_passed": true
+}
