@@ -182,6 +182,60 @@ class ReproductionTests(unittest.TestCase):
                 aggregate(folders, root / "invalid")
             self.assertFalse((root / "invalid").exists())
 
+    def test_evidence_audit_detects_prediction_tampering(self):
+        from scripts.audit_baseline import audit, score, sha256
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            train = root / "train.csv"
+            test = root / "test.csv"
+            for path in (train, test):
+                path.write_text("labels,TDsentence,TDlabels\nNRP,g0 g1,0 1\nNRP,g1 g0,1 0\n")
+            target = np.array([[0, 1], [1, 0]], dtype=np.float32)
+            probability = np.array([[0.1, 0.9], [0.8, 0.2]], dtype=np.float32)
+            summary = dict(seeds=list(range(1301, 1306)), seed_directories={}, metrics={})
+            output = root / "runs/legacy_remaining_parallel"
+            output.mkdir(parents=True)
+            for seed in range(1301, 1306):
+                folder = output / f"seed_{seed}"
+                folder.mkdir()
+                summary["seed_directories"][str(seed)] = str(folder.relative_to(root))
+                config = dict(seed=seed, epochs=200, batch_size=32, learning_rate=0.0005,
+                              patience=0, scheduler="original", max_len=128, nhead=5,
+                              encoder_layers=2, transformer_dropout=0.1, mlp_dropout=0.1,
+                              validation_ratio=0.2, weight_decay=0.01, threshold=0.5,
+                              evaluation_split="test", selection="minimum validation BCE",
+                              dataset=str(train), test_dataset=str(test),
+                              dataset_sha256=sha256(train), test_dataset_sha256=sha256(test))
+                (folder / "config.json").write_text(json.dumps(config))
+                (folder / "split.json").write_text(json.dumps({"train": [0], "validation": [1]}))
+                status = dict(completed_epochs=200, stop_reason="epoch_cap", best_epoch=0)
+                (folder / "training_status.json").write_text(json.dumps(status))
+                rows, rate = [], 0.0005
+                for epoch in range(200):
+                    rows.append(dict(epoch=epoch, lr=rate, validation={"bce": 0.1 + epoch * 0.001}))
+                    if epoch >= 5 and rate > 5e-6:
+                        rate *= 0.95
+                (folder / "epochs.jsonl").write_text("\n".join(json.dumps(row) for row in rows))
+                bce = float(torch.nn.functional.binary_cross_entropy(torch.from_numpy(probability), torch.from_numpy(target)))
+                result = dict(seed=seed, best_epoch=0, validation_bce=0.1, bce=bce, **score(target, probability))
+                (folder / "test_metrics.json").write_text(json.dumps(result))
+                np.savez(folder / "test_predictions.npz", target=target, probability=probability)
+                for filename in ("best.pt", "last.pt"):
+                    (folder / filename).write_bytes(b"synthetic checkpoint for hash audit only")
+            for metric in ("bce", "accuracy", "precision", "recall", "f1", "auroc", "average_precision"):
+                summary["metrics"][metric] = {"mean": result[metric], "sample_std": 0.0}
+            (output / "summary.json").write_text(json.dumps(summary))
+            for relative in ("data/ng/prepared/provenance.json", "data/ng/esm2_encoding.json"):
+                path = root / relative
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text("{}")
+            report = audit(root)
+            self.assertTrue(report["audit_passed"])
+            self.assertEqual(report["seeds"][0]["split_audit"]["shared_train_validation_gene_ids"], 2)
+            np.savez(folder / "test_predictions.npz", target=target, probability=np.zeros_like(probability))
+            with self.assertRaises(ValueError):
+                audit(root)
+
     def test_prepare_ng(self):
         self.assertEqual(len(list(windows(list(range(256))))), 2)
         self.assertEqual(list(windows(list(range(129))))[-1], list(range(1, 129)))
