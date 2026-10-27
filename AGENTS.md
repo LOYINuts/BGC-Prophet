@@ -8,9 +8,9 @@
 - Use complete official training data from Zenodo record 17112180.
 - Download datasets on server only.
 - Use our raw NG GenBank and annotations; encode proteins afresh with ESM2-8M.
-- Current task: detection model only, seeds 1301–1305, GPU 1.
-- Preserve model settings; use paper LR 0.01, batch 64 and patience 20.
-- Record any settings the paper does not specify in ANALYSIS.md.
+- Detection model is a fixed comparison baseline, seeds 1301–1305.
+- Do not optimize or retune the baseline. Report its five-seed mean/sample SD.
+- Keep actual experiment protocols and paper/config differences in ANALYSIS.md.
 - Never overwrite existing experiments or stop unrelated processes.
 - Keep credentials, datasets, environments and model outputs out of Git.
 - Keep experiment details in `ANALYSIS.md`, not this file.

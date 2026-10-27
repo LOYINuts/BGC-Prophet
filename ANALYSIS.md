@@ -338,7 +338,7 @@ log: `/home/gonghang/codes/BGC-Prophet-investigation.log`.
 The first diagnostic results and final legacy five-seed results are pending;
 do not claim the suspected LR effect has been experimentally established yet.
 
-## Completed legacy baseline and next optimization, 2026-10-27
+## Completed comparison baseline, 2026-10-27
 
 All five legacy seeds completed 200 epochs and independent NG testing. The
 three-GPU aggregate in `runs/legacy_remaining_parallel/summary.json` combines
@@ -371,40 +371,28 @@ published training procedure. Recall remains about one half of annotated gene
 positions; accuracy is only about 1.1 percentage points above all-negative
 accuracy, so F1, AP and recall are more informative.
 
-A server audit independently recomputes metrics from each prediction array,
-checks 200 history epochs, minimum-BCE selection and aggregate mean/sample SD.
-Record its successful completion before treating array verification as passed.
-The aggregate already checks matching data hashes and training protocols.
+The server audit independently recomputed all five NG prediction-array metrics,
+checked 200 history epochs, minimum-BCE selection and aggregate mean/sample SD.
+It completed with `ALL_BASELINE_RESULTS_VERIFIED`. The aggregate also checks
+matching data hashes and training protocols. All completed baseline results
+are retained as the comparison baseline, without loss reweighting or retuning.
 
-### Authorized next optimization: training-positive-weight pilots
+### Baseline scope clarified by the user
 
-Hypothesis: imbalance in gene-level BCE contributes to missed positive genes.
-Test weights 1 (control), 2 and 4 using seed 1301, LR 0.0005, batch 32,
-original LR schedule, same split, architecture and data. Training loss is
-`mean(BCE * (positive_weight if target == 1 else 1))`; it is not renormalized.
-The training `bce` log and all validation BCE remain ordinary unweighted BCE,
-so checkpoint and stopping comparisons do not change units. Weight 1 exactly
-preserves the existing objective and gradients. No model architecture changes.
+The purpose of this model is comparison against the user's own model using
+five-seed mean and sample SD. It must remain a fixed baseline; no further model
+optimization or hyperparameter search is wanted. A positive-loss-weight pilot
+was prepared after the prior wording was interpreted too broadly, but it was
+never launched. Its unused code was removed, restoring the training module
+and tests to their baseline versions. The transferred bundle is disposable;
+no optimized checkpoints or metrics form part of the baseline.
 
-Three pilots run on GPUs 0/1/2, each capped at 100 epochs with patience 20.
-NG inputs are deliberately omitted. Pilots select checkpoints by minimum
-validation BCE; compare validation AP, with smaller weight breaking ties.
-The 100-epoch cap and patience differ from the completed 200-epoch baseline,
-so the concurrent weight-1 control is required. A single-seed apparent gain
-requires validation-only confirmation on seeds 1302/1303 before any new NG
-evaluation. Different GPU architectures can also introduce numerical effects.
-Do not promise improvement or replace the completed baseline on a pilot alone.
-
-Launcher: `scripts/run_weight_pilots.sh`. Comparison:
-`scripts/compare_weight_pilots.py`. Output: `runs/positive_weight_pilot/`,
-with per-weight histories, predictions and `comparison.json` after completion.
-CLI `--positive-weight` defaults to 1 and rejects nonfinite/nonpositive values.
-Seven local tests passed, including exact weighted-loss/gradient calculations,
-validation-only selection and rejection of mismatched pilot splits.
-
-The remaining 14 MiB three-GPU transfer bundle is eligible for deletion after
-code synchronization. Preserve extracted training data, NG data/embeddings,
-all baseline and failed-run checkpoints, predictions, histories and logs.
+Final comparison metrics are the five-seed NG results above. Use identical NG
+annotations, gene positions, thresholds and aggregation units when comparing
+with the user's model. AP is average precision; do not label it trapezoidal
+PR-AUC. These settings are the disclosed repository-derived baseline rather
+than the failed main-text-parameter attempt. No claim about the user's model's
+relative performance can be made without its matching results.
 
 ## Three-GPU launch correction after successful slow SSH login
 

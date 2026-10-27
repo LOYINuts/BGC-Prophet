@@ -45,12 +45,7 @@ def seed_all(seed):
     torch.cuda.manual_seed_all(seed)
 
 
-def detection_loss(probability, target, positive_weight=1.0):
-    loss = torch.nn.functional.binary_cross_entropy(probability, target, reduction="none")
-    return (loss * torch.where(target == 1, positive_weight, 1.0)).mean()
-
-
-def run_epoch(model, loader, device, optimizer=None, positive_weight=1.0):
+def run_epoch(model, loader, device, optimizer=None):
     model.train(optimizer is not None)
     loss_sum, count = 0.0, 0
     targets, probabilities = [], []
@@ -60,12 +55,11 @@ def run_epoch(model, loader, device, optimizer=None, positive_weight=1.0):
             if optimizer is not None:
                 optimizer.zero_grad(set_to_none=True)
             probability = model(sentence)
-            bce = torch.nn.functional.binary_cross_entropy(probability, target)
-            loss = detection_loss(probability, target, positive_weight) if optimizer is not None else bce
+            loss = torch.nn.functional.binary_cross_entropy(probability, target)
             if optimizer is not None:
                 loss.backward()
                 optimizer.step()
-            loss_sum += bce.item() * target.numel()
+            loss_sum += loss.item() * target.numel()
             count += target.numel()
             targets.append(target.detach().cpu().numpy())
             probabilities.append(probability.detach().cpu().numpy())
@@ -109,15 +103,11 @@ def main():
     parser.add_argument("--scheduler", choices=["none", "original"], default="none")
     parser.add_argument("--batch-size", type=int, default=64)
     parser.add_argument("--learning-rate", type=float, default=0.01)
-    parser.add_argument("--positive-weight", type=float, default=1.0,
-                        help="Training BCE positive weight; validation BCE stays unweighted")
     parser.add_argument("--max-len", type=int, default=128)
     parser.add_argument("--workers", type=int, default=0)
     parser.add_argument("--device", choices=["cuda", "cpu"], default="cuda")
     parser.add_argument("--check-only", action="store_true")
     args = parser.parse_args()
-    if not np.isfinite(args.positive_weight) or args.positive_weight <= 0:
-        parser.error("--positive-weight must be finite and positive")
     if (args.epochs is not None and args.epochs < 1) or args.patience < 0 or (args.patience == 0 and args.epochs is None) or args.batch_size < 1 or args.workers != 0 or len(set(args.seeds)) != len(args.seeds):
         parser.error("Positive epoch cap/patience/batch size, unique seeds and --workers 0 required")
     for path in ((args.dataset, args.test_dataset) if args.test_lmdb else (args.dataset,)):
@@ -182,8 +172,7 @@ def main():
         stop_reason = None
         with (folder / "epochs.jsonl").open("w", encoding="utf-8") as history:
             for epoch in itertools.count():
-                train_metrics, _, _ = run_epoch(model, loaders[0], args.device, optimizer,
-                                                 positive_weight=args.positive_weight)
+                train_metrics, _, _ = run_epoch(model, loaders[0], args.device, optimizer)
                 validation_metrics, _, _ = run_epoch(model, loaders[1], args.device)
                 if not np.isfinite(validation_metrics["bce"]):
                     raise ValueError("Nonfinite validation BCE")

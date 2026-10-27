@@ -17,7 +17,7 @@ from Bio.Seq import Seq
 from Bio.SeqFeature import SeqFeature, SimpleLocation
 from Bio.SeqRecord import SeqRecord
 
-from bgc_prophet.train.reproduce import detection_loss, main, metrics
+from bgc_prophet.train.reproduce import main, metrics
 from bgc_prophet.train.model import transformerEncoderNet
 from scripts.prepare_ng import windows
 
@@ -104,7 +104,7 @@ class ReproductionTests(unittest.TestCase):
             observed_rates = []
             observed_batches = []
             calls = []
-            def fake_epoch(model, loader, device, optimizer=None, positive_weight=1.0):
+            def fake_epoch(model, loader, device, optimizer=None):
                 calls.append(optimizer is not None)
                 if optimizer is not None:
                     observed_rates.append(optimizer.param_groups[0]["lr"])
@@ -156,17 +156,6 @@ class ReproductionTests(unittest.TestCase):
             self.assertAlmostEqual(observed_rates[6], 0.01 * 0.95)
             self.assertAlmostEqual(observed_rates[7], 0.01 * 0.95 ** 2)
 
-    def test_positive_weight_only_changes_positive_loss(self):
-        probability = torch.tensor([0.2, 0.7], requires_grad=True)
-        target = torch.tensor([0.0, 1.0])
-        raw = torch.nn.functional.binary_cross_entropy(probability, target, reduction="none")
-        torch.testing.assert_close(detection_loss(probability, target), raw.mean())
-        weighted = detection_loss(probability, target, 4.0)
-        torch.testing.assert_close(weighted, (raw[0] + 4 * raw[1]) / 2)
-        base_gradient, = torch.autograd.grad(raw.mean(), probability, retain_graph=True)
-        weighted_gradient, = torch.autograd.grad(weighted, probability)
-        torch.testing.assert_close(weighted_gradient, base_gradient * torch.tensor([1.0, 4.0]))
-
     def test_parallel_aggregate(self):
         from scripts.summarize_parallel import aggregate
         with tempfile.TemporaryDirectory() as temporary:
@@ -192,28 +181,6 @@ class ReproductionTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 aggregate(folders, root / "invalid")
             self.assertFalse((root / "invalid").exists())
-
-    def test_weight_pilot_selection(self):
-        from scripts.compare_weight_pilots import compare
-        with tempfile.TemporaryDirectory() as temporary:
-            root = Path(temporary)
-            for weight, ap in ((1, 0.8), (2, 0.85), (4, 0.81)):
-                folder = root / f"weight_{weight}/seed_1301"
-                folder.mkdir(parents=True)
-                config = dict(dataset_sha256="same", seed=1301, batch_size=32, learning_rate=0.0005,
-                              scheduler="original", epochs=100, patience=20, nhead=5, encoder_layers=2,
-                              positive_weight=weight, evaluation_split="validation")
-                (folder / "config.json").write_text(json.dumps(config))
-                (folder / "split.json").write_text(json.dumps({"train": [0], "validation": [1]}))
-                (folder / "training_status.json").write_text(json.dumps({"completed_epochs": 30}))
-                (folder / "validation_metrics.json").write_text(json.dumps({"average_precision": ap}))
-            report = compare(root)
-            self.assertEqual(report["selected_weight"], 2)
-            self.assertFalse(report["ng_evaluated"])
-            self.assertAlmostEqual(report["validation_ap_gain"], 0.05)
-            (root / "weight_4/seed_1301/split.json").write_text(json.dumps({"train": [1], "validation": [0]}))
-            with self.assertRaises(ValueError):
-                compare(root)
 
     def test_prepare_ng(self):
         self.assertEqual(len(list(windows(list(range(256))))), 2)
