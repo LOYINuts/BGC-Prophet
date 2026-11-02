@@ -236,6 +236,16 @@ class ReproductionTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 audit(root)
 
+    def test_mcc_counts_match_independent_library(self):
+        from scripts.supplement_baseline_metrics import mcc_from_counts
+        from sklearn.metrics import matthews_corrcoef
+        self.assertEqual(mcc_from_counts([[5, 0], [3, 0]]), 0.0)
+        self.assertEqual(mcc_from_counts([[2, 0], [0, 2]]), 1.0)
+        self.assertEqual(mcc_from_counts([[0, 2], [2, 0]]), -1.0)
+        y = [0] * 8 + [1] * 2
+        p = [0] * 6 + [1] * 2 + [0, 1]
+        self.assertAlmostEqual(mcc_from_counts([[6, 2], [1, 1]]), matthews_corrcoef(y, p))
+
     def test_prepare_ng(self):
         self.assertEqual(len(list(windows(list(range(256))))), 2)
         self.assertEqual(list(windows(list(range(129))))[-1], list(range(1, 129)))
