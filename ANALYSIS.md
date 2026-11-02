@@ -6,6 +6,11 @@ Use that report for five-seed model comparisons; machine-readable evidence is
 passed metric recomputation, per-file fingerprints and full NG inference from
 all five best checkpoints. This file preserves the audit history and explicitly
 separated unsuccessful or interrupted experiments.
+Precision, Recall and MCC are additionally verified from all five saved
+prediction arrays in [reports/baseline/metrics-supplement.json](reports/baseline/metrics-supplement.json).
+MCC mean/sample SD is 0.531239/0.021451; Precision 0.624249/0.045475;
+Recall 0.493873/0.032054. The original audit JSON remains unchanged.
+See `scripts/supplement_baseline_metrics.py` for independent reproduction.
 
 This repository detects biosynthetic gene clusters from protein sequences, then
 classifies their products. Expected use: one researcher processing genomes or

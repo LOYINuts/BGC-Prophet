@@ -97,10 +97,43 @@ AP 指 scikit-learn `average_precision_score`，不冒充梯形积分 PR-AUC。
 | F1 | 0.549888 | 0.020520 |
 | AUROC | 0.900016 | 0.005431 |
 | AP | 0.559659 | 0.022080 |
+| MCC | 0.531239 | 0.021451 |
 
 先分别计算每个种子的指标，再对五个值求平均和标准差。
 不先合并五次预测再计算指标，不按单基因组 F1 做宏平均。
 全预测为阴性的 Accuracy 已达 0.943942，因此不能只用 Accuracy 说明效果。
+
+## Precision、Recall 和 MCC 补充核验
+
+这三个指标均使用固定阈值 0.5，逐种子计算后求均值和样本标准差。
+MCC 为 Matthews correlation coefficient，范围为 -1 到 1，定义为：
+
+```text
+MCC = (TP × TN - FP × FN)
+      / sqrt((TP + FP)(TP + FN)(TN + FP)(TN + FN))
+```
+
+分母为零时记为 0，与 scikit-learn 约定一致。本次五个 seed 分母均非零。
+不拼接五次预测计算单个 MCC，也不平均各基因组 MCC。
+
+| Seed | Precision | Recall | MCC |
+| --- | --- | --- | --- |
+| 1301 | 0.548415 | 0.504865 | 0.499282 |
+| 1302 | 0.641678 | 0.490665 | 0.538754 |
+| 1303 | 0.631776 | 0.533263 | 0.557766 |
+| 1304 | 0.670500 | 0.444649 | 0.524860 |
+| 1305 | 0.628876 | 0.495924 | 0.535534 |
+| 均值 | 0.624249 | 0.493873 | 0.531239 |
+| 样本标准差 | 0.045475 | 0.032054 | 0.021451 |
+
+服务器已从五份原始 `test_predictions.npz` 独立重算 Precision、Recall、
+`matthews_corrcoef` 和混淆矩阵；与原证据中的 Precision、Recall 及由计数公式
+计算的 MCC 在 `1e-12` 容差内一致。未重新训练或修改阈值。
+
+补充证据见 [reports/baseline/metrics-supplement.json](reports/baseline/metrics-supplement.json)，
+其中 `prediction_arrays_verified=true`。它记录原审计 JSON 的 SHA256，
+原 [audit.json](reports/baseline/audit.json) 保持原样，旧证据指纹不变。
+复核脚本为 [scripts/supplement_baseline_metrics.py](scripts/supplement_baseline_metrics.py)。
 
 ## 混淆矩阵
 

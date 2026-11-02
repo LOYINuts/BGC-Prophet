@@ -1,0 +1,103 @@
+{
+  "source_evidence_sha256": "9e86a78beb45ff6c804682f4b8845c00deff10cecddda978885461d00949e040",
+  "threshold": 0.5,
+  "aggregation": "per-seed metrics then mean and sample SD (ddof=1)",
+  "prediction_arrays_verified": true,
+  "zero_denominator_mcc": 0.0,
+  "seeds": [
+    {
+      "seed": 1301,
+      "precision": 0.5484147386461011,
+      "recall": 0.5048645805942676,
+      "mcc": 0.4992816988192801,
+      "confusion_matrix": [
+        [
+          62456,
+          1581
+        ],
+        [
+          1883,
+          1920
+        ]
+      ]
+    },
+    {
+      "seed": 1302,
+      "precision": 0.6416781292984869,
+      "recall": 0.4906652642650539,
+      "mcc": 0.5387542615766358,
+      "confusion_matrix": [
+        [
+          62995,
+          1042
+        ],
+        [
+          1937,
+          1866
+        ]
+      ]
+    },
+    {
+      "seed": 1303,
+      "precision": 0.6317757009345795,
+      "recall": 0.5332632132526952,
+      "mcc": 0.5577658585774609,
+      "confusion_matrix": [
+        [
+          62855,
+          1182
+        ],
+        [
+          1775,
+          2028
+        ]
+      ]
+    },
+    {
+      "seed": 1304,
+      "precision": 0.6704996034892942,
+      "recall": 0.44464896134630555,
+      "mcc": 0.524860198016861,
+      "confusion_matrix": [
+        [
+          63206,
+          831
+        ],
+        [
+          2112,
+          1691
+        ]
+      ]
+    },
+    {
+      "seed": 1305,
+      "precision": 0.6288762920973658,
+      "recall": 0.49592427031291086,
+      "mcc": 0.5355341423251927,
+      "confusion_matrix": [
+        [
+          62924,
+          1113
+        ],
+        [
+          1917,
+          1886
+        ]
+      ]
+    }
+  ],
+  "summary": {
+    "precision": {
+      "mean": 0.6242488928931655,
+      "sample_std": 0.045474693856512954
+    },
+    "recall": {
+      "mean": 0.49387325795424664,
+      "sample_std": 0.03205427819941774
+    },
+    "mcc": {
+      "mean": 0.5312392318630861,
+      "sample_std": 0.021450873195362388
+    }
+  }
+}
